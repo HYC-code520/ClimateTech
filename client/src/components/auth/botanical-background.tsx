@@ -1,4 +1,4 @@
-import fernImage from "@assets/image_1754251356220.png";
+import leafImage from "@assets/leaf-image-bg_1754253561241.png";
 
 interface BotanicalBackgroundProps {
   type: "login" | "signup";
@@ -9,7 +9,7 @@ export function BotanicalBackground({ type }: BotanicalBackgroundProps) {
     <div 
       className="w-1/2 relative overflow-hidden"
       style={{
-        backgroundImage: `url(${fernImage})`,
+        backgroundImage: `url(${leafImage})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat"
