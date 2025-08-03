@@ -66,34 +66,6 @@
 }
 
 @layer components {
-  .botanical-bg-login {
-    background-image: url('https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080');
-    background-size: cover;
-    background-position: center;
-    position: relative;
-  }
-  
-  .botanical-bg-login::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(45deg, hsla(158, 64%, 52%, 0.1), hsla(0, 0%, 0%, 0.8));
-  }
-  
-  .botanical-bg-signup {
-    background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080');
-    background-size: cover;
-    background-position: center;
-    position: relative;
-  }
-  
-  .botanical-bg-signup::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(225deg, hsla(158, 64%, 52%, 0.1), hsla(0, 0%, 0%, 0.8));
-  }
-  
   .form-input-botanical {
     background: hsla(0, 0%, 100%, 0.05);
     border: 1px solid hsla(0, 0%, 100%, 0.1);

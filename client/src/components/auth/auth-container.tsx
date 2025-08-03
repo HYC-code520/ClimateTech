@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { User } from "lucide-react";
 import { useLocation } from "wouter";
 import { LoginForm } from "./login-form";
@@ -104,33 +104,51 @@ export function AuthContainer() {
         </div>
       </div>
 
-      {/* Sliding Container */}
-      <motion.div
-        className="w-[200%] h-full flex"
-        animate={{
-          x: mode === "login" ? "0%" : "-50%"
-        }}
-        transition={{
-          duration: 0.8,
-          ease: [0.4, 0, 0.2, 1]
-        }}
-      >
-        {/* Login View */}
-        <div className="w-1/2 h-full flex">
-          <div className="w-1/2 bg-black flex items-center justify-center p-12">
-            <LoginForm />
-          </div>
-          <BotanicalBackground type="login" />
-        </div>
+      <AnimatePresence mode="wait">
+        {/* Login Page - Full Screen */}
+        {mode === "login" && (
+          <motion.div
+            key="login"
+            className="w-full h-full flex"
+            initial={{ opacity: 0, x: -100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 }}
+            transition={{
+              duration: 0.8,
+              ease: [0.4, 0, 0.2, 1]
+            }}
+          >
+            {/* Left side - Form */}
+            <div className="w-1/2 bg-black flex items-center justify-center p-12">
+              <LoginForm />
+            </div>
+            {/* Right side - Background */}
+            <BotanicalBackground type="login" />
+          </motion.div>
+        )}
 
-        {/* Sign Up View */}
-        <div className="w-1/2 h-full flex">
-          <BotanicalBackground type="signup" />
-          <div className="w-1/2 bg-black flex items-center justify-center p-12">
-            <SignupForm />
-          </div>
-        </div>
-      </motion.div>
+        {/* Sign Up Page - Full Screen */}
+        {mode === "signup" && (
+          <motion.div
+            key="signup"
+            className="w-full h-full flex"
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 100 }}
+            transition={{
+              duration: 0.8,
+              ease: [0.4, 0, 0.2, 1]
+            }}
+          >
+            {/* Left side - Background */}
+            <BotanicalBackground type="signup" />
+            {/* Right side - Form */}
+            <div className="w-1/2 bg-black flex items-center justify-center p-12">
+              <SignupForm />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
