@@ -92,16 +92,6 @@ export default function HomePage() {
               Climate
             </h1>
           </div>
-
-          {/* Single Full-Size Leaf Overlay - On top of everything */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none z-20">
-            <img 
-              src={leafImage} 
-              alt=""
-              className="absolute bottom-0 left-0 w-full h-full object-cover object-bottom"
-              style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.3))' }}
-            />
-          </div>
         </main>
 
         {/* Footer */}
@@ -114,6 +104,16 @@ export default function HomePage() {
             Updated: August 2025
           </div>
         </footer>
+      </div>
+
+      {/* Single Full-Size Leaf Overlay - On top of everything including footer */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-50">
+        <img 
+          src={leafImage} 
+          alt=""
+          className="absolute -bottom-10 left-0 w-full h-[110%] object-cover object-bottom"
+          style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.3))' }}
+        />
       </div>
     </div>
   );
