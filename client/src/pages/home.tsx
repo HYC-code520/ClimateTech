@@ -87,20 +87,20 @@ export default function HomePage() {
 
         {/* Main Content */}
         <main className="flex-1 flex items-center justify-center px-4 md:px-6 relative">
-          {/* Single Full-Size Leaf Background */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="text-center relative z-10">
+            <h1 className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-light text-white leading-none tracking-tight">
+              Climate
+            </h1>
+          </div>
+
+          {/* Single Full-Size Leaf Overlay - On top of everything */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none z-20">
             <img 
               src={leafImage} 
               alt=""
               className="absolute bottom-0 left-0 w-full h-full object-cover object-bottom"
               style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.3))' }}
             />
-          </div>
-
-          <div className="text-center relative z-10">
-            <h1 className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-light text-white leading-none tracking-tight">
-              Climate
-            </h1>
           </div>
         </main>
 
