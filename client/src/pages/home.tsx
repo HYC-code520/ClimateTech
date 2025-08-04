@@ -87,38 +87,13 @@ export default function HomePage() {
 
         {/* Main Content */}
         <main className="flex-1 flex items-center justify-center px-4 md:px-6 relative">
-          {/* Floating Leaf Elements */}
+          {/* Single Full-Size Leaf Background */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {/* Top left small leaf */}
             <img 
               src={leafImage} 
               alt=""
-              className="absolute top-10 left-[15%] w-16 h-16 md:w-20 md:h-20 object-contain transform rotate-12 opacity-90"
-              style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }}
-            />
-            
-            {/* Top right medium leaf */}
-            <img 
-              src={leafImage} 
-              alt=""
-              className="absolute top-16 right-[12%] w-24 h-24 md:w-32 md:h-32 object-contain transform -rotate-6 opacity-95"
-              style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))' }}
-            />
-            
-            {/* Bottom center large leaf - main focal point */}
-            <img 
-              src={leafImage} 
-              alt=""
-              className="absolute bottom-8 left-[8%] w-40 h-40 md:w-56 md:h-56 lg:w-64 lg:h-64 object-contain transform rotate-3 opacity-100"
-              style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.4))' }}
-            />
-            
-            {/* Additional decorative leaf - middle right */}
-            <img 
-              src={leafImage} 
-              alt=""
-              className="absolute top-1/2 right-[20%] w-12 h-12 md:w-16 md:h-16 object-contain transform rotate-45 opacity-80"
-              style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.2))' }}
+              className="absolute inset-0 w-full h-full object-cover opacity-20"
+              style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.3))' }}
             />
           </div>
 
