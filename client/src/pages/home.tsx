@@ -27,7 +27,6 @@ export default function HomePage() {
     >
       {/* Dark overlay for better text readability */}
       <div className="absolute inset-0 bg-black/40"></div>
-      
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Navigation Header */}
@@ -88,7 +87,7 @@ export default function HomePage() {
         {/* Main Content */}
         <main className="flex-1 flex items-center justify-center px-4 md:px-6 relative">
           <div className="text-center relative z-10">
-            <h1 className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black text-white leading-none tracking-tight">
+            <h1 className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] text-white leading-none tracking-tight font-bold">
               Climate
             </h1>
           </div>
@@ -107,7 +106,6 @@ export default function HomePage() {
           </div>
         </footer>
       </div>
-
       {/* Single Full-Size Leaf Overlay - On top of everything including footer */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-50">
         <img 
