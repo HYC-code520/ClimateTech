@@ -96,7 +96,7 @@ export default function HomePage() {
 
         {/* Footer */}
         <footer className="px-4 md:px-6 py-6 flex flex-col sm:flex-row items-center justify-between text-sm space-y-2 sm:space-y-0">
-          <div className="flex flex-col sm:flex-row items-center justify-between w-full border border-white/20 rounded-lg px-4 py-3 space-y-2 sm:space-y-0">
+          <div className="flex flex-col sm:flex-row items-center justify-between w-full border border-white/20 rounded-3xl px-4 py-3 space-y-2 sm:space-y-0">
             <div className="flex items-center space-x-2 text-white/80">
               <span>Power by</span>
               <span className="text-[var(--botanical-green)] font-medium">public data + AI tagging</span>
