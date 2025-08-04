@@ -36,7 +36,7 @@ export default function HomePage() {
           <nav className="hidden md:flex space-x-8">
             <a 
               href="#" 
-              className="text-white hover:text-[var(--botanical-green)] transition-colors font-medium"
+              className="text-[var(--botanical-green)] hover:text-[var(--botanical-light)] transition-colors font-medium"
               data-testid="nav-funding-events"
             >
               Funding Events
@@ -111,7 +111,7 @@ export default function HomePage() {
         <img 
           src={leafImage} 
           alt=""
-          className="absolute -bottom-10 left-0 w-full h-[110%] object-cover object-bottom"
+          className="absolute -bottom-32 left-0 w-full h-[120%] object-cover object-bottom"
           style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.3))' }}
         />
       </div>
