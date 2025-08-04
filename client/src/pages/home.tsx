@@ -87,7 +87,7 @@ export default function HomePage() {
         {/* Main Content */}
         <main className="flex-1 flex items-center justify-center px-8 md:px-16 relative -mt-16">
           <div className="text-center relative z-10">
-            <h1 className="text-8xl sm:text-9xl md:text-[12rem] lg:text-[16rem] text-white leading-none tracking-tight font-bold">
+            <h1 className="text-8xl sm:text-9xl md:text-[12rem] lg:text-[16rem] text-white leading-none tracking-tight font-semibold">
               Climate
             </h1>
           </div>
