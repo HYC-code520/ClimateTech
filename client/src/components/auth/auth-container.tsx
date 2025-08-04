@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { User } from "lucide-react";
+import { User, Home, Leaf } from "lucide-react";
 import { useLocation } from "wouter";
 import { LoginForm } from "./login-form";
 import { SignupForm } from "./signup-form";
@@ -22,9 +22,23 @@ export function AuthContainer() {
     setLocation("/signup");
   };
 
+  const handleGoHome = () => {
+    setLocation("/");
+  };
+
   if (isMobile) {
     return (
       <div className="fixed inset-0 bg-black z-40 flex items-center justify-center p-6">
+        {/* Mobile Home Button */}
+        <button
+          onClick={handleGoHome}
+          className="absolute top-6 left-6 z-50 flex items-center space-x-2 text-white hover:text-[var(--botanical-green)] transition-colors"
+          data-testid="mobile-home-button"
+        >
+          <Leaf className="w-5 h-5" />
+          <span className="text-sm font-medium">ECOLENS</span>
+        </button>
+
         <div className="max-w-sm w-full">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -73,6 +87,16 @@ export function AuthContainer() {
 
   return (
     <div className="relative w-full h-screen flex overflow-hidden">
+      {/* Home Button */}
+      <button
+        onClick={handleGoHome}
+        className="absolute top-6 left-6 z-50 flex items-center space-x-2 text-white hover:text-[var(--botanical-green)] transition-colors"
+        data-testid="desktop-home-button"
+      >
+        <Leaf className="w-6 h-6" />
+        <span className="text-lg font-semibold tracking-wide">ECOLENS</span>
+      </button>
+
       {/* Toggle Buttons */}
       <div className="absolute top-6 right-6 z-50 flex gap-3">
         <button
