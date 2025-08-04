@@ -85,7 +85,7 @@ export default function HomePage() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 flex items-center justify-center px-4 md:px-6 relative">
+        <main className="flex-1 flex items-center justify-center px-8 md:px-16 relative">
           <div className="text-center relative z-10">
             <h1 className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] text-white leading-none tracking-tight font-bold">
               Climate
@@ -94,7 +94,7 @@ export default function HomePage() {
         </main>
 
         {/* Footer */}
-        <footer className="px-4 md:px-6 py-6 flex flex-col sm:flex-row items-center justify-between text-sm space-y-2 sm:space-y-0">
+        <footer className="px-8 md:px-16 py-6 flex flex-col sm:flex-row items-center justify-between text-sm space-y-2 sm:space-y-0">
           <div className="flex flex-col sm:flex-row items-center justify-between w-full border border-[var(--botanical-green)] rounded-3xl px-4 py-3 space-y-2 sm:space-y-0" style={{ borderWidth: '1px' }}>
             <div className="flex items-center space-x-2 text-white/80">
               <span>Power by</span>
