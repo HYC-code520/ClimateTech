@@ -107,11 +107,11 @@ export default function HomePage() {
         </footer>
       </div>
       {/* Single Full-Size Leaf Overlay - On top of everything including footer */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-50">
+      <div className="absolute inset-0 pointer-events-none z-50" style={{ overflow: 'visible' }}>
         <img 
           src={leafImage} 
           alt=""
-          className="absolute -bottom-48 -right-24 w-[80%] h-[105%] object-cover object-bottom"
+          className="absolute -bottom-32 -right-32 w-[80%] h-[105%] object-cover object-bottom"
           style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.3))' }}
         />
       </div>
