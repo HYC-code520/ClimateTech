@@ -31,7 +31,7 @@ export default function HomePage() {
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Navigation Header */}
-        <header className="px-4 md:px-6 py-6 flex items-center justify-between">
+        <header className="px-8 md:px-12 py-8 flex items-center justify-between">
           {/* Left Navigation - Hidden on mobile */}
           <nav className="hidden md:flex space-x-8">
             <a 
