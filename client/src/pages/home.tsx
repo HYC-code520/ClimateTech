@@ -1,7 +1,7 @@
 import { Leaf, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import homeBg from "@assets/home-bg_1754320407119.png";
-import leafImage from "@assets/home-page-leaf_1754320774579.png";
+import leafImage from "@assets/home-page-leaf_1754321116425.png";
 import { useLocation } from "wouter";
 
 export default function HomePage() {
