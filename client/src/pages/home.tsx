@@ -111,7 +111,7 @@ export default function HomePage() {
         <img 
           src={leafImage} 
           alt=""
-          className="absolute -bottom-32 left-0 w-full h-[105%] object-cover object-center"
+          className="absolute -bottom-32 left-1/2 transform -translate-x-1/2 w-[90%] max-w-6xl h-[105%] object-cover object-center"
           style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.3))' }}
         />
       </div>
