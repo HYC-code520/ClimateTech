@@ -89,7 +89,7 @@ export function SidebarNavigation({ className = "" }: SidebarNavigationProps) {
   };
 
   return (
-    <div className={`w-64 bg-gray-800 h-screen flex flex-col ${className}`}>
+    <div className={`w-64 bg-gray-800 h-full flex flex-col ${className}`}>
       {/* Main Navigation */}
       <div className="flex-1 pt-6">
         <nav className="space-y-1 px-3">
