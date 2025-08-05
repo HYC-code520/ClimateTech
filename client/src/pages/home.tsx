@@ -30,30 +30,30 @@ export default function HomePage() {
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Navigation Header */}
-        <header className="px-8 md:px-12 py-8 flex items-center justify-between">
+        <header className="relative z-50 px-8 md:px-12 py-8 flex items-center justify-between">
           {/* Left Navigation - Hidden on mobile */}
           <nav className="hidden md:flex space-x-8">
-            <a 
-              href="#" 
+            <button 
+              onClick={() => setLocation("/funding-tracker")}
               className="text-[var(--botanical-green)] hover:text-[var(--botanical-light)] transition-colors font-medium"
-              data-testid="nav-funding-events"
+              data-testid="nav-funding-tracker"
             >
-              Funding Events
-            </a>
-            <a 
-              href="#" 
+              Funding Tracker
+            </button>
+            <button 
+              onClick={() => setLocation("/insights")}
               className="text-white hover:text-[var(--botanical-green)] transition-colors font-medium"
               data-testid="nav-insights"
             >
               Insights
-            </a>
-            <a 
-              href="#" 
+            </button>
+            <button 
+              onClick={() => setLocation("/about")}
               className="text-white hover:text-[var(--botanical-green)] transition-colors font-medium"
               data-testid="nav-about"
             >
               About
-            </a>
+            </button>
           </nav>
 
           {/* Mobile spacer */}
