@@ -24,12 +24,6 @@ export default function InsightsPage() {
         {/* Left Navigation */}
         <nav className="hidden md:flex space-x-8">
           <button 
-            onClick={handleGoHome}
-            className="text-white hover:text-[var(--botanical-green)] transition-colors font-medium"
-          >
-            Home
-          </button>
-          <button 
             onClick={() => setLocation("/funding-tracker")}
             className="text-white hover:text-[var(--botanical-green)] transition-colors font-medium"
           >
