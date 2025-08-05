@@ -299,9 +299,9 @@ export default function FundingTrackerPage() {
         </div>
 
         {/* Funding Events Display */}
-        <div className="space-y-4 mt-8 bg-blue-500 p-4 rounded">
-          <div className="flex items-center gap-2 mb-6 bg-yellow-500 p-2 rounded">
-            <Building2 className="w-5 h-5 text-green-500" />
+        <div className="space-y-4 mt-8">
+          <div className="flex items-center gap-2 mb-6">
+            <Building2 className="w-5 h-5 text-[var(--botanical-green)]" />
             <h2 className="text-xl font-semibold text-white">Recent Funding Events</h2>
             <span className="text-gray-400">({fundingEvents.length} results)</span>
           </div>
@@ -312,7 +312,7 @@ export default function FundingTrackerPage() {
 
           {/* Data Display */}
           {!isLoading && !isError && fundingEvents.map((event) => (
-            <div key={event.EventID} className="bg-gray-800 border-2 border-white rounded-lg overflow-hidden mb-4">
+            <div key={event.EventID} className="bg-gray-900/50 border border-gray-700 rounded-lg overflow-hidden mb-4 hover:border-gray-600 transition-colors">
               {/* Main Event Card */}
               <div 
                 className="p-6 cursor-pointer hover:bg-gray-800/30 transition-colors"
