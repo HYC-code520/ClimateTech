@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/context/auth-context";
 import HomePage from "@/pages/home";
-import FundingTrackerPage from "@/pages/funding-tracker";
+import FundingTrackerWithSidebar from "@/pages/funding-tracker-with-sidebar";
 import InsightsPage from "@/pages/insights";
 import AboutPage from "@/pages/about";
 import AuthPage from "@/pages/auth";
@@ -15,7 +15,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
-      <Route path="/funding-tracker" component={FundingTrackerPage} />
+      <Route path="/funding-tracker" component={FundingTrackerWithSidebar} />
       <Route path="/insights" component={InsightsPage} />
       <Route path="/about" component={AboutPage} />
       <Route path="/login" component={AuthPage} />
