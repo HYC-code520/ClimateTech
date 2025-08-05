@@ -105,8 +105,10 @@ export function LoginForm({ isMobile = false }: LoginFormProps) {
   return (
     <div className="max-w-md w-full">
       <div className="mb-12">
-        <h1 className="text-5xl font-light text-white mb-4">Login</h1>
-        <p className="text-gray-400 text-sm">Sign up here if you already have an account</p>
+        <h1 className="text-5xl font-light text-white mb-4">Welcome Back</h1>
+        <p className="text-gray-400 text-sm">
+          Access your climate tech funding dashboard and continue tracking investments, startups, and market insights.
+        </p>
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

@@ -107,3 +107,71 @@
     color: white;
   }
 }
+
+/* Custom Scrollbar Styling */
+@layer utilities {
+  /* Webkit Scrollbars (Chrome, Safari, Edge) */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--botanical-green);
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--botanical-light);
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background: var(--botanical-dark);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  /* Firefox Scrollbars */
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--botanical-green) rgba(0, 0, 0, 0.3);
+  }
+
+  /* Custom utility class for specific scrollable areas */
+  .scrollbar-botanical {
+    scrollbar-width: thin;
+    scrollbar-color: var(--botanical-green) rgba(0, 0, 0, 0.3);
+  }
+
+  .scrollbar-botanical::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-botanical::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+  }
+
+  .scrollbar-botanical::-webkit-scrollbar-thumb {
+    background: var(--botanical-green);
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+  }
+
+  .scrollbar-botanical::-webkit-scrollbar-thumb:hover {
+    background: var(--botanical-light);
+  }
+
+  .scrollbar-botanical::-webkit-scrollbar-thumb:active {
+    background: var(--botanical-dark);
+  }
+}

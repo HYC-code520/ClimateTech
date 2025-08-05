@@ -1,9 +1,14 @@
+import { SidebarNavigation } from "./sidebar-navigation";
 import { Leaf, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import homeBg from "@assets/home-bg_1754320407119.png";
 
-export default function InsightsPage() {
+interface NavbarSidebarLayoutProps {
+  children: React.ReactNode;
+}
+
+export function NavbarSidebarLayout({ children }: NavbarSidebarLayoutProps) {
   const [, setLocation] = useLocation();
 
   const handleGoHome = () => {
@@ -32,19 +37,19 @@ export default function InsightsPage() {
       <div className="absolute inset-0 bg-black/40"></div>
       
       {/* Content wrapper */}
-      <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Navigation Header */}
+      <div className="relative z-10 min-h-screen">
+        {/* Navbar at the top (full width) */}
         <header className="relative z-50 px-8 md:px-12 py-8 flex items-center justify-between">
           {/* Left Navigation */}
           <nav className="hidden md:flex space-x-8">
             <button 
-              onClick={() => setLocation("/funding-tracker")}
-              className="text-white hover:text-[var(--botanical-green)] transition-colors font-medium"
+              className="text-[var(--botanical-green)] hover:text-[var(--botanical-light)] transition-colors font-medium"
             >
               Funding Tracker
             </button>
             <button 
-              className="text-[var(--botanical-green)] hover:text-[var(--botanical-light)] transition-colors font-medium"
+              onClick={() => setLocation("/insights")}
+              className="text-white hover:text-[var(--botanical-green)] transition-colors font-medium"
             >
               Insights
             </button>
@@ -84,28 +89,19 @@ export default function InsightsPage() {
             </button>
           </div>
         </header>
-
-        {/* Main Content */}
-        <main className="flex-1 flex items-center justify-center px-8 md:px-16 py-16">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-6xl md:text-8xl text-white leading-none tracking-tight font-semibold mb-8">
-              Insights
-            </h1>
-            <div className="space-y-6">
-              <p className="text-xl text-white/80 max-w-2xl mx-auto">
-                Discover climate tech trends, market analysis, and investment insights powered by AI.
-              </p>
-              <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-8 text-center">
-                <p className="text-gray-400 text-lg mb-4">
-                  This page is under construction
-                </p>
-                <p className="text-gray-500">
-                  Coming soon: Market trends, investment patterns, sector analysis, and AI-powered insights.
-                </p>
-              </div>
+        
+        {/* Content area with sidebar and main content below navbar */}
+        <div className="flex" style={{ height: 'calc(100vh - 120px)' }}>
+          {/* Sidebar */}
+          <SidebarNavigation className="flex-shrink-0" />
+          
+          {/* Main Content Area - this will contain the original page without its header */}
+          <div className="flex-1 overflow-auto">
+            <div className="px-8 md:px-12 py-8">
+              {children}
             </div>
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

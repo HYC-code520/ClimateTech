@@ -6,6 +6,7 @@ import { SignupForm } from "./signup-form";
 import { BotanicalBackground } from "./botanical-background";
 import { useAuthContext } from "@/hooks/use-auth-context";
 import { useIsMobile } from "@/hooks/use-mobile";
+import leafImage from "@assets/leaf-image-bg_1754253561241.png";
 
 export function AuthContainer() {
   const [, setLocation] = useLocation();
@@ -97,81 +98,82 @@ export function AuthContainer() {
         <span className="text-lg font-semibold tracking-wide">ECOLENS</span>
       </button>
 
-      {/* Toggle Buttons */}
-      <div className="absolute top-6 right-6 z-50 flex gap-3">
-        <button
-          onClick={handleSwitchToLogin}
-          className={`toggle-btn px-6 py-2 rounded-full text-white font-medium text-sm ${
-            mode === "login" ? "active" : ""
-          }`}
-          data-testid="login-toggle"
-        >
-          <span className="mr-2">←</span>
-          LOG IN
-        </button>
-        <button
-          onClick={handleSwitchToSignup}
-          className={`toggle-btn px-6 py-2 rounded-full text-white font-medium text-sm ${
-            mode === "signup" ? "active" : ""
-          }`}
-          data-testid="signup-toggle"
-        >
-          SIGN UP
-          <span className="ml-2">→</span>
-        </button>
-      </div>
-
-      {/* Profile Icon */}
+      {/* Toggle Button - Top Center */}
       <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-50">
-        <div className="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center">
-          <User className="text-white text-lg" />
-        </div>
+        {mode === "login" ? (
+          <button
+            onClick={handleSwitchToSignup}
+            className="toggle-btn px-6 py-2 rounded-full text-white font-medium text-sm"
+            data-testid="signup-toggle"
+          >
+            SIGN UP
+            <span className="ml-2">→</span>
+          </button>
+        ) : (
+          <button
+            onClick={handleSwitchToLogin}
+            className="toggle-btn px-6 py-2 rounded-full text-white font-medium text-sm"
+            data-testid="login-toggle"
+          >
+            <span className="mr-2">←</span>
+            LOG IN
+          </button>
+        )}
       </div>
 
       <AnimatePresence mode="wait">
-        {/* Login Page - Full Screen */}
-        {mode === "login" && (
-          <motion.div
-            key="login"
-            className="w-full h-full flex"
-            initial={{ opacity: 0, x: -100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -100 }}
-            transition={{
-              duration: 0.8,
-              ease: [0.4, 0, 0.2, 1]
-            }}
-          >
-            {/* Left side - Form */}
-            <div className="w-1/2 bg-black flex items-center justify-center p-12">
-              <LoginForm />
-            </div>
-            {/* Right side - Background */}
-            <BotanicalBackground type="login" />
-          </motion.div>
-        )}
+        {/* Single Full-Width Background */}
+        <div 
+          className="absolute inset-0 w-full h-full"
+          style={{
+            backgroundImage: `url(${leafImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat"
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-black/30 to-[var(--botanical-green)]/10"></div>
+        </div>
 
-        {/* Sign Up Page - Full Screen */}
-        {mode === "signup" && (
+        {/* Single sliding black container */}
+        <div className="w-full h-full flex relative z-10">
           <motion.div
-            key="signup"
-            className="w-full h-full flex"
-            initial={{ opacity: 0, x: 100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 100 }}
+            className="w-1/2 bg-black flex items-center justify-center p-12 absolute top-0 h-full"
+            animate={{
+              left: mode === "login" ? "0%" : "50%"
+            }}
             transition={{
-              duration: 0.8,
-              ease: [0.4, 0, 0.2, 1]
+              duration: 0.6,
+              ease: [0.25, 0.46, 0.45, 0.94]
             }}
           >
-            {/* Left side - Background */}
-            <BotanicalBackground type="signup" />
-            {/* Right side - Form */}
-            <div className="w-1/2 bg-black flex items-center justify-center p-12">
-              <SignupForm />
-            </div>
+            <AnimatePresence mode="wait">
+              {mode === "login" && (
+                <motion.div
+                  key="login"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <LoginForm />
+                </motion.div>
+              )}
+              
+              {mode === "signup" && (
+                <motion.div
+                  key="signup"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <SignupForm />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
-        )}
+        </div>
       </AnimatePresence>
     </div>
   );

@@ -1,10 +1,10 @@
-import { SidebarLayout } from "@/components/ui/sidebar-layout";
-import FundingTrackerPage from "./funding-tracker";
+import { NavbarSidebarLayout } from "@/components/ui/navbar-sidebar-layout";
+import FundingTrackerContent from "./funding-tracker-content";
 
 export default function FundingTrackerWithSidebar() {
   return (
-    <SidebarLayout>
-      <FundingTrackerPage />
-    </SidebarLayout>
+    <NavbarSidebarLayout>
+      <FundingTrackerContent />
+    </NavbarSidebarLayout>
   );
 } 
