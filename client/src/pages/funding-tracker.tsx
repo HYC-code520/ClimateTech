@@ -1,53 +1,43 @@
 import { Leaf, User, Search, ChevronDown, Calendar, Filter, ExternalLink, MapPin, DollarSign, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useDebounce } from "../hooks/use-debounce";
 
-// Sample data
-const sampleFundingEvents = [
-  {
-    id: 1,
-    companyName: "GreenCem",
-    fundingDate: "2025-07-01",
-    fundingStage: "Series A",
-    amountRaised: "$15M USD",
-    sector: "Carbon Tech",
-    leadInvestors: ["Clean Capital"],
-    country: "USA",
-    problem: "High greenhouse gas emissions from cement production",
-    impactMetric: "30,000 tCO2e abated annually",
-    tags: ["Hardware", "B2B", "Female-Founded"],
-    sourceUrl: "https://example.com/greeniem-funding"
-  },
-  {
-    id: 2,
-    companyName: "AquaTech Solutions",
-    fundingDate: "2025-06-15",
-    fundingStage: "Seed",
-    amountRaised: "$3.2M USD",
-    sector: "Water Tech",
-    leadInvestors: ["Blue Ocean Ventures", "H2O Capital"],
-    country: "Germany",
-    problem: "Water scarcity and inefficient water treatment systems",
-    impactMetric: "1M liters of water saved daily",
-    tags: ["SaaS", "B2B", "AI/ML"],
-    sourceUrl: "https://example.com/aquatech-funding"
-  },
-  {
-    id: 3,
-    companyName: "SolarGrid",
-    fundingDate: "2025-05-20",
-    fundingStage: "Series B",
-    amountRaised: "$45M USD",
-    sector: "Energy",
-    leadInvestors: ["Energy Ventures"],
-    country: "India",
-    problem: "Inefficient solar energy distribution and storage",
-    impactMetric: "200 GWh renewable energy generated annually",
-    tags: ["Hardware", "B2C", "Grid Tech"],
-    sourceUrl: "https://example.com/solargrid-funding"
+// Define the shape of a single funding event based on our API contract
+type FundingEvent = {
+  EventID: number;
+  CompanyName: string;
+  FundingDate: string;
+  FundingStage: string;
+  AmountRaisedUSD: number;
+  LeadInvestors: string;
+  ClimateTechSector: string;
+  Country: string;
+  SourceURL: string;
+  Problem: string;
+  ImpactMetric: string;
+  Tags: string;
+};
+
+// API fetching function
+const fetchFundingEvents = async (filters: any): Promise<FundingEvent[]> => {
+  // Build the query string from the filters object
+  const queryParams = new URLSearchParams();
+  for (const key in filters) {
+    if (filters[key]) {
+      queryParams.append(key, filters[key]);
+    }
   }
-];
+
+  const response = await fetch(`/api/events/search?${queryParams.toString()}`);
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+  return response.json();
+};
+
 
 export default function FundingTrackerPage() {
   const [, setLocation] = useLocation();
@@ -55,13 +45,28 @@ export default function FundingTrackerPage() {
     sector: "",
     fundingStage: "",
     country: "",
-    leadInvestor: "",
-    dateFrom: "",
-    dateTo: "",
-    tags: []
+    investorName: "", // Changed from leadInvestor to match API
+    startDate: "",    // Changed from dateFrom
+    endDate: "",      // Changed from dateTo
+    tags: ""          // Changed from array to comma-separated string
   });
   const [expandedEvent, setExpandedEvent] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Debounce the search term to avoid excessive API calls
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  // Combine debounced search term with other filters for the API query
+  const queryFilters = {
+    ...selectedFilters,
+    companyName: debouncedSearchTerm,
+  };
+
+  // Use TanStack Query to fetch, cache, and manage the data
+  const { data: fundingEvents = [], isLoading, isError, error } = useQuery<FundingEvent[]>({
+    queryKey: ['fundingEvents', queryFilters], // The key includes filters, so it refetches when they change
+    queryFn: () => fetchFundingEvents(queryFilters),
+  });
 
   const handleGoHome = () => {
     setLocation("/");
@@ -80,7 +85,7 @@ export default function FundingTrackerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Navigation Header */}
       <header className="relative z-50 px-8 md:px-12 py-8 flex items-center justify-between">
         {/* Left Navigation */}
@@ -140,7 +145,7 @@ export default function FundingTrackerPage() {
       </header>
 
       {/* Main Content */}
-      <main className="px-8 md:px-12 pb-16">
+      <main className="px-8 md:px-12 pb-16 flex-grow">
         {/* Page Title */}
         <div className="mb-8">
           <h1 className="text-4xl md:text-6xl text-white leading-none tracking-tight font-semibold mb-4">
@@ -239,8 +244,8 @@ export default function FundingTrackerPage() {
               <input
                 type="text"
                 placeholder="Search investors..."
-                value={selectedFilters.leadInvestor}
-                onChange={(e) => setSelectedFilters({...selectedFilters, leadInvestor: e.target.value})}
+                value={selectedFilters.investorName}
+                onChange={(e) => setSelectedFilters({...selectedFilters, investorName: e.target.value})}
                 className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:border-[var(--botanical-green)] focus:outline-none"
               />
             </div>
@@ -250,8 +255,8 @@ export default function FundingTrackerPage() {
               <label className="block text-sm font-medium mb-2">Date From</label>
               <input
                 type="date"
-                value={selectedFilters.dateFrom}
-                onChange={(e) => setSelectedFilters({...selectedFilters, dateFrom: e.target.value})}
+                value={selectedFilters.startDate}
+                onChange={(e) => setSelectedFilters({...selectedFilters, startDate: e.target.value})}
                 className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:border-[var(--botanical-green)] focus:outline-none"
               />
             </div>
@@ -260,8 +265,8 @@ export default function FundingTrackerPage() {
               <label className="block text-sm font-medium mb-2">Date To</label>
               <input
                 type="date"
-                value={selectedFilters.dateTo}
-                onChange={(e) => setSelectedFilters({...selectedFilters, dateTo: e.target.value})}
+                value={selectedFilters.endDate}
+                onChange={(e) => setSelectedFilters({...selectedFilters, endDate: e.target.value})}
                 className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:border-[var(--botanical-green)] focus:outline-none"
               />
             </div>
@@ -269,16 +274,14 @@ export default function FundingTrackerPage() {
             {/* Tags (placeholder for multi-select) */}
             <div className="col-span-full">
               <label className="block text-sm font-medium mb-2">Tags</label>
-              <div className="flex flex-wrap gap-2">
-                {["Hardware", "SaaS", "B2B", "B2C", "Female-Founded", "AI/ML", "Grid Tech"].map((tag) => (
-                  <button
-                    key={tag}
-                    className="px-3 py-1 text-sm border border-gray-600 rounded-full hover:border-[var(--botanical-green)] transition-colors"
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
+              {/* This is a simplified version for now. A real multi-select would be more complex. */}
+              <input
+                type="text"
+                placeholder="Enter tags, comma-separated (e.g. SaaS,B2B)"
+                value={selectedFilters.tags}
+                onChange={(e) => setSelectedFilters({...selectedFilters, tags: e.target.value})}
+                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:border-[var(--botanical-green)] focus:outline-none"
+              />
             </div>
           </div>
 
@@ -289,10 +292,10 @@ export default function FundingTrackerPage() {
                 sector: "",
                 fundingStage: "",
                 country: "",
-                leadInvestor: "",
-                dateFrom: "",
-                dateTo: "",
-                tags: []
+                investorName: "",
+                startDate: "",
+                endDate: "",
+                tags: ""
               })}
               className="bg-transparent border border-gray-600 text-white hover:bg-gray-800 transition-colors"
             >
@@ -306,33 +309,28 @@ export default function FundingTrackerPage() {
           <div className="flex items-center gap-2 mb-6 bg-yellow-500 p-2 rounded">
             <Building2 className="w-5 h-5 text-green-500" />
             <h2 className="text-xl font-semibold text-white">Recent Funding Events</h2>
-            <span className="text-gray-400">({sampleFundingEvents.length} results)</span>
+            <span className="text-gray-400">({fundingEvents.length} results)</span>
           </div>
 
-          {/* Debug info */}
-          <div className="text-white bg-red-500 p-2 rounded">
-            Debug: Found {sampleFundingEvents.length} events
-          </div>
+          {/* Loading and Error States */}
+          {isLoading && <div className="text-center p-8">Loading events...</div>}
+          {isError && <div className="text-center p-8 text-red-500">Error fetching data: {error.message}</div>}
 
-          {/* Another debug marker */}
-          <div className="text-black bg-green-400 p-4 rounded text-xl font-bold">
-            🎯 DATA SECTION STARTS HERE - You should see cards below this!
-          </div>
-
-          {sampleFundingEvents.map((event) => (
-            <div key={event.id} className="bg-gray-800 border-2 border-white rounded-lg overflow-hidden mb-4">
+          {/* Data Display */}
+          {!isLoading && !isError && fundingEvents.map((event) => (
+            <div key={event.EventID} className="bg-gray-800 border-2 border-white rounded-lg overflow-hidden mb-4">
               {/* Main Event Card */}
               <div 
                 className="p-6 cursor-pointer hover:bg-gray-800/30 transition-colors"
-                onClick={() => toggleExpanded(event.id)}
+                onClick={() => toggleExpanded(event.EventID)}
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-center">
                   {/* Company Name & Date */}
                   <div className="lg:col-span-2">
-                    <h3 className="text-lg font-semibold text-white mb-1">{event.companyName}</h3>
+                    <h3 className="text-lg font-semibold text-white mb-1">{event.CompanyName}</h3>
                     <div className="flex items-center gap-1 text-gray-400 text-sm">
                       <Calendar className="w-3 h-3" />
-                      {event.fundingDate}
+                      {new Date(event.FundingDate).toLocaleDateString()}
                     </div>
                   </div>
 
@@ -340,7 +338,7 @@ export default function FundingTrackerPage() {
                   <div>
                     <div className="text-sm text-gray-400 mb-1">Stage</div>
                     <div className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-sm inline-block">
-                      {event.fundingStage}
+                      {event.FundingStage}
                     </div>
                   </div>
 
@@ -348,20 +346,20 @@ export default function FundingTrackerPage() {
                     <div className="text-sm text-gray-400 mb-1">Amount</div>
                     <div className="flex items-center gap-1">
                       <DollarSign className="w-3 h-3" />
-                      <span className="font-medium">{event.amountRaised}</span>
+                      <span className="font-medium">${(event.AmountRaisedUSD / 1000000).toFixed(1)}M</span>
                     </div>
                   </div>
 
                   <div>
                     <div className="text-sm text-gray-400 mb-1">Sector</div>
-                    <div className="text-white">{event.sector}</div>
+                    <div className="text-white">{event.ClimateTechSector}</div>
                   </div>
 
                   <div>
                     <div className="text-sm text-gray-400 mb-1">Country</div>
                     <div className="flex items-center gap-1">
                       <MapPin className="w-3 h-3" />
-                      <span>{event.country}</span>
+                      <span>{event.Country}</span>
                     </div>
                   </div>
                 </div>
@@ -370,31 +368,30 @@ export default function FundingTrackerPage() {
                 <div className="mt-4">
                   <div className="text-sm text-gray-400 mb-1">Lead Investors</div>
                   <div className="flex flex-wrap gap-2">
-                    {event.leadInvestors.map((investor, idx) => (
-                      <span key={idx} className="px-2 py-1 bg-gray-800 rounded text-sm">
-                        {investor}
-                      </span>
-                    ))}
+                    {/* The API currently returns a single investor name string */}
+                    <span className="px-2 py-1 bg-gray-800 rounded text-sm">
+                      {event.LeadInvestors}
+                    </span>
                   </div>
                 </div>
               </div>
 
               {/* Expanded Details */}
-              {expandedEvent === event.id && (
+              {expandedEvent === event.EventID && (
                 <div className="border-t border-gray-700 p-6 bg-gray-800/30">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <h4 className="text-sm font-medium text-gray-300 mb-2">Problem Statement</h4>
-                      <p className="text-white mb-4">{event.problem}</p>
+                      <p className="text-white mb-4">{event.Problem}</p>
 
                       <h4 className="text-sm font-medium text-gray-300 mb-2">Impact Metric</h4>
-                      <p className="text-[var(--botanical-green)]">{event.impactMetric}</p>
+                      <p className="text-[var(--botanical-green)]">{event.ImpactMetric}</p>
                     </div>
 
                     <div>
                       <h4 className="text-sm font-medium text-gray-300 mb-2">Tags</h4>
                       <div className="flex flex-wrap gap-2 mb-4">
-                        {event.tags.map((tag, idx) => (
+                        {event.Tags.split(',').map((tag, idx) => (
                           <span key={idx} className="px-2 py-1 bg-gray-700 rounded-full text-xs">
                             {tag}
                           </span>
@@ -403,7 +400,7 @@ export default function FundingTrackerPage() {
 
                       <h4 className="text-sm font-medium text-gray-300 mb-2">Source</h4>
                       <a 
-                        href={event.sourceUrl}
+                        href={event.SourceURL}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-1 text-[var(--botanical-green)] hover:text-[var(--botanical-light)] transition-colors"
@@ -434,4 +431,4 @@ export default function FundingTrackerPage() {
       </footer>
     </div>
   );
-} 
+}
