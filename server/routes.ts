@@ -3,8 +3,10 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { loginSchema, signupSchema } from "@shared/schema";
 import { ZodError } from "zod";
+import eventRoutes from './routes/eventRoutes';
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  app.use('/api', eventRoutes);
   // Auth routes
   app.post("/api/auth/login", async (req, res) => {
     try {
