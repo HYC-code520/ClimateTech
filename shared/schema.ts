@@ -29,11 +29,17 @@ export const investors = pgTable('investors', {
 export const fundingRounds = pgTable('funding_rounds', {
   id: serial('id').primaryKey(),
   companyId: integer('company_id').notNull().references(() => companies.id),
+  stage: varchar('stage', { length: 50 }),
+  amountUsd: integer('amount_usd'),
+  announcedAt: date('announced_at'),
+  sourceUrl: varchar('source_url', { length: 512 }),
+});
+
+// NEW "join" table to link investors to a funding round
+export const investments = pgTable('investments', {
+  id: serial('id').primaryKey(),
+  fundingRoundId: integer('funding_round_id').notNull().references(() => fundingRounds.id),
   investorId: integer('investor_id').notNull().references(() => investors.id),
-  stage: varchar('stage', { length: 50 }),          // FundingStage
-  amountUsd: integer('amount_usd'),                  // AmountRaisedUSD
-  announcedAt: date('announced_at'),               // FundingDate
-  sourceUrl: varchar('source_url', { length: 512 }), // SourceURL
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({

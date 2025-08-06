@@ -1,9 +1,9 @@
 // server/controllers/eventController.ts
 
 import { Request, Response } from 'express';
-import { db } from '../db'; // Assuming your Drizzle instance is exported from 'server/db/index.ts'
-import { companies, investors, fundingRounds } from '../../shared/schema';
-import { sql, eq, ilike, and, gte, lte } from 'drizzle-orm'; // Import gte and lte for date ranges
+import { db } from '../db';
+import { companies, investors, fundingRounds, investments } from '../../shared/schema';
+import { sql, eq, ilike, and, gte, lte } from 'drizzle-orm';
 
 export const searchEventsController = async (req: Request, res: Response) => {
   try {
@@ -21,7 +21,7 @@ export const searchEventsController = async (req: Request, res: Response) => {
         FundingDate: fundingRounds.announcedAt,
         FundingStage: fundingRounds.stage,
         AmountRaisedUSD: fundingRounds.amountUsd,
-        LeadInvestors: investors.name,
+        LeadInvestors: sql<string>`string_agg(${investors.name}, ', ')`.as('lead_investors'),
         ClimateTechSector: companies.industry,
         Country: companies.country,
         SourceURL: fundingRounds.sourceUrl,
@@ -31,7 +31,17 @@ export const searchEventsController = async (req: Request, res: Response) => {
       })
       .from(fundingRounds)
       .leftJoin(companies, eq(fundingRounds.companyId, companies.id))
-      .leftJoin(investors, eq(fundingRounds.investorId, investors.id));
+      .leftJoin(investments, eq(fundingRounds.id, investments.fundingRoundId))
+      .leftJoin(investors, eq(investments.investorId, investors.id))
+      .groupBy(
+        fundingRounds.id, 
+        companies.name, 
+        companies.industry, 
+        companies.country, 
+        companies.problemStatement, 
+        companies.impactMetric, 
+        companies.tags
+      );
 
     // Create a list of conditions to apply to the query
     const conditions = [];
@@ -66,7 +76,8 @@ export const searchEventsController = async (req: Request, res: Response) => {
     }
 
     // --- 3. Execute the Query ---
-    const results = await query;
+    const finalQuery = conditions.length > 0 ? query.having(and(...conditions)) : query;
+    const results = await finalQuery;
 
     // --- 4. Send the Response ---
     res.status(200).json(results);
