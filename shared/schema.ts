@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, boolean, timestamp, serial, integer, date, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, boolean, timestamp, serial, integer, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -33,10 +33,6 @@ export const fundingRounds = pgTable('funding_rounds', {
   amountUsd: integer('amount_usd'),
   announcedAt: date('announced_at'),
   sourceUrl: varchar('source_url', { length: 512 }),
-}, (table) => {
-  return {
-    unq: unique().on(table.companyId, table.stage, table.amountUsd),
-  };
 });
 
 // NEW "join" table to link investors to a funding round
