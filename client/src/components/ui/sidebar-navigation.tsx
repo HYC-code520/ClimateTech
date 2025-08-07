@@ -16,50 +16,50 @@ interface SidebarNavigationProps {
 }
 
 export function SidebarNavigation({ className = "" }: SidebarNavigationProps) {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
 
   const navigationItems = [
     {
       icon: TrendingUp,
       label: "Funding Events",
       path: "/funding-tracker",
-      active: true
+      active: location === "/funding-tracker"
     },
     {
       icon: LayoutDashboard,
       label: "Dashboard",
       path: "/dashboard",
-      active: false
+      active: location === "/dashboard"
     },
     {
       icon: Users,
       label: "Investors",
       path: "/investors",
-      active: false
+      active: location === "/investors"
     },
     {
       icon: Rocket,
       label: "Startups",
       path: "/startups",
-      active: false
+      active: location === "/startups"
     },
     {
       icon: Building2,
       label: "Sectors",
       path: "/sectors",
-      active: false
+      active: location === "/sectors"
     },
     {
       icon: MapPin,
       label: "Map View",
       path: "/map",
-      active: false
+      active: location === "/map"
     },
     {
       icon: Database,
       label: "Source Data",
       path: "/source-data",
-      active: false
+      active: location === "/source-data"
     }
   ];
 
@@ -68,64 +68,62 @@ export function SidebarNavigation({ className = "" }: SidebarNavigationProps) {
       icon: Settings,
       label: "Settings",
       path: "/settings",
-      active: false
+      active: location === "/settings"
     },
     {
       icon: HelpCircle,
       label: "Help",
       path: "/help",
-      active: false
+      active: location === "/help"
     }
   ];
 
   const handleNavigation = (path: string) => {
-    if (path === "/funding-tracker") {
-      // Stay on current page if it's funding tracker
-      return;
-    }
-    // For other paths, you can implement navigation or show coming soon
-    console.log(`Navigate to ${path}`);
-    // setLocation(path); // Uncomment when pages are ready
+    setLocation(path);
   };
 
   return (
     <div className={`w-64 bg-gray-800 h-full flex flex-col ${className}`}>
-      {/* Main Navigation */}
-      <div className="flex-1 pt-6">
-        <nav className="space-y-1 px-3">
+      {/* Navigation Items */}
+      <div className="flex-1 px-4 py-6">
+        <nav className="space-y-2">
           {navigationItems.map((item) => {
             const Icon = item.icon;
             return (
               <button
                 key={item.path}
                 onClick={() => handleNavigation(item.path)}
-                className={`w-full flex items-center gap-3 px-3 py-3 text-left rounded-lg transition-colors ${
+                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                   item.active
-                    ? "bg-[var(--botanical-green)]/20 text-[var(--botanical-green)] border-l-2 border-[var(--botanical-green)]"
-                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                    ? 'bg-[var(--botanical-green)] text-white'
+                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
+                <Icon className="mr-3 h-5 w-5" />
+                {item.label}
               </button>
             );
           })}
         </nav>
       </div>
 
-      {/* Bottom Navigation */}
-      <div className="pb-6">
-        <nav className="space-y-1 px-3">
+      {/* Bottom Items */}
+      <div className="px-4 py-4 border-t border-gray-700">
+        <nav className="space-y-2">
           {bottomItems.map((item) => {
             const Icon = item.icon;
             return (
               <button
                 key={item.path}
                 onClick={() => handleNavigation(item.path)}
-                className="w-full flex items-center gap-3 px-3 py-3 text-left rounded-lg transition-colors text-gray-300 hover:bg-gray-700 hover:text-white"
+                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  item.active
+                    ? 'bg-[var(--botanical-green)] text-white'
+                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                }`}
               >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
+                <Icon className="mr-3 h-5 w-5" />
+                {item.label}
               </button>
             );
           })}
@@ -133,4 +131,4 @@ export function SidebarNavigation({ className = "" }: SidebarNavigationProps) {
       </div>
     </div>
   );
-} 
+}
