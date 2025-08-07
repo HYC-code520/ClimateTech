@@ -27,23 +27,23 @@ export const processScrapedDataController = async (req: Request, res: Response) 
     for (const deal of deals) {
         try {
             // --- 1. Find or Create the Company ---
-            let [company] = await db.select().from(companies).where(eq(companies.name, deal.companyName));
-            if (!company) {
-                [company] = await db.insert(companies).values({
-                    name: deal.companyName,
-                    country: deal.country,
-                    industry: deal.climateTechSector,
-                    // problem, impact, tags can be null for now
-                }).returning();
-            }
+            const companyValues = {
+                name: deal.companyName,
+                country: deal.country,
+                industry: deal.climateTechSector,
+            };
+            const [company] = await db.insert(companies)
+                .values(companyValues)
+                .onConflictDoUpdate({ target: companies.name, set: companyValues })
+                .returning();
 
             // --- 2. Find or Create the Investors ---
             const investorIds = [];
             for (const investorName of deal.leadInvestors) {
-                let [investor] = await db.select().from(investors).where(eq(investors.name, investorName.trim()));
-                if (!investor) {
-                    [investor] = await db.insert(investors).values({ name: investorName.trim() }).returning();
-                }
+                const [investor] = await db.insert(investors)
+                    .values({ name: investorName.trim() })
+                    .onConflictDoUpdate({ target: investors.name, set: { name: investorName.trim() } })
+                    .returning();
                 investorIds.push(investor.id);
             }
 
