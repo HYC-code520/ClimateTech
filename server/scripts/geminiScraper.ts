@@ -116,7 +116,8 @@ async function scrapeAndParse(targetUrl: string) {
     for (const deal of dealsToProcess) {
         const structuredData = await parseTextWithGemini(deal.rawText, deal.stage);
         if (structuredData) {
-            allParsedDeals.push(structuredData);
+            // Add the sourceUrl from the scraped page to the structured data
+            allParsedDeals.push({ ...structuredData, sourceUrl: targetUrl });
         }
         await new Promise(resolve => setTimeout(resolve, 1000)); 
     }
@@ -144,4 +145,4 @@ async function scrapeAndParse(targetUrl: string) {
 }
 
 // Call the function with the URL you want to scrape
-scrapeAndParse('https://www.ctvc.co/fervo-goes-hotter-deeper-faster-cheaper-250/');
+scrapeAndParse('https://www.ctvc.co/epa-puts-emissions-rules-in-danger-257/');
