@@ -10,12 +10,28 @@ import InsightsPage from "@/pages/insights";
 import AboutPage from "@/pages/about";
 import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
+import InvestorsPage from "@/pages/investors";
+import DashboardPage from "@/pages/dashboard";
+import StartupsPage from "@/pages/startups";
+import SectorsPage from "@/pages/sectors";
+import MapPage from "@/pages/map";
+import SourceDataPage from "@/pages/source-data";
+import SettingsPage from "@/pages/settings";
+import HelpPage from "@/pages/help";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/funding-tracker" component={FundingTrackerWithSidebar} />
+      <Route path="/dashboard" component={DashboardPage} />
+      <Route path="/investors" component={InvestorsPage} />
+      <Route path="/startups" component={StartupsPage} />
+      <Route path="/sectors" component={SectorsPage} />
+      <Route path="/map" component={MapPage} />
+      <Route path="/source-data" component={SourceDataPage} />
+      <Route path="/settings" component={SettingsPage} />
+      <Route path="/help" component={HelpPage} />
       <Route path="/insights" component={InsightsPage} />
       <Route path="/about" component={AboutPage} />
       <Route path="/login" component={AuthPage} />
