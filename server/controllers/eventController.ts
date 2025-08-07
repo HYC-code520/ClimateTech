@@ -3,7 +3,7 @@
 import { Request, Response } from 'express';
 import { db } from '../db';
 import { companies, investors, fundingRounds, investments } from '../../shared/schema';
-import { sql, eq, ilike, and, gte, lte } from 'drizzle-orm';
+import { sql, eq, ilike, and, or, gte, lte, exists } from 'drizzle-orm'; // Add 'exists'
 
 export const searchEventsController = async (req: Request, res: Response) => {
   try {
@@ -11,9 +11,10 @@ export const searchEventsController = async (req: Request, res: Response) => {
     console.log("Query Params:", req.query);
 
     const { 
-        companyName, investorName, stage, sector, country, tags,
-        startDate, // NEW: For Date Range
-        endDate    // NEW: For Date Range
+        searchTerm, // Universal search parameter
+        companyName, investorName, stage, sector, country, tags, // Keep existing for compatibility
+        startDate,
+        endDate
     } = req.query;
 
     let query = db
@@ -50,13 +51,36 @@ export const searchEventsController = async (req: Request, res: Response) => {
     const whereConditions = [];
     const havingConditions = [];
 
-    // --- Standard Filters (go into WHERE) ---
+    // Universal search across all fields INCLUDING investors
+    if (searchTerm) {
+      whereConditions.push(
+        or(
+          ilike(companies.name, `%${searchTerm}%`),
+          ilike(companies.industry, `%${searchTerm}%`),
+          ilike(companies.country, `%${searchTerm}%`),
+          ilike(companies.problemStatement || '', `%${searchTerm}%`),
+          ilike(companies.tags || '', `%${searchTerm}%`),
+          // Search investors using EXISTS subquery
+          exists(
+            db.select()
+              .from(investments)
+              .innerJoin(investors, eq(investments.investorId, investors.id))
+              .where(and(
+                eq(investments.fundingRoundId, fundingRounds.id),
+                ilike(investors.name, `%${searchTerm}%`)
+              ))
+          )
+        )
+      );
+    }
+
+    // Keep existing specific filters for backwards compatibility
     if (companyName) whereConditions.push(ilike(companies.name, `%${companyName}%`));
     if (stage) whereConditions.push(eq(fundingRounds.stage, stage as string));
     if (sector) whereConditions.push(eq(companies.industry, sector as string));
     if (country) whereConditions.push(eq(companies.country, country as string));
 
-    // --- Aggregate Filter (goes into HAVING) ---
+    // Specific investor filter (separate from universal search)
     if (investorName) {
       havingConditions.push(ilike(sql<string>`string_agg(${investors.name}, ', ')`, `%${investorName as string}%`));
     }
