@@ -70,6 +70,9 @@ export const getInvestorsWithTimeline = async (req: Request, res: Response) => {
 
 // Generate mock data for better visualization until we have real data
 function generateMockTimelineData(investorName: string) {
+  const sectors = ['Energy', 'Transportation', 'Food & Agriculture', 'Industry', 'Buildings', 'Carbon Management'];
+  const stages = ['Seed', 'Series A', 'Series B', 'Series C'];
+  
   const baseData = [
     { months: 6, amounts: [5, 15, 25] },
     { months: 8, amounts: [10, 30, 45] },
@@ -87,7 +90,8 @@ function generateMockTimelineData(investorName: string) {
       date: date.toISOString().split('T')[0],
       amount: config.amounts[Math.floor(Math.random() * config.amounts.length)] + Math.random() * 10,
       companyName: `Mock Company ${i + 1}`,
-      stage: ['Seed', 'Series A', 'Series B'][Math.floor(Math.random() * 3)]
+      stage: stages[Math.floor(Math.random() * stages.length)],
+      sector: sectors[Math.floor(Math.random() * sectors.length)]
     };
   });
 } 
