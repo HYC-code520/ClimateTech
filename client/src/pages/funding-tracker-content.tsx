@@ -1,4 +1,4 @@
-import { Search, ChevronDown, Calendar, Filter, ExternalLink, MapPin, DollarSign, Building2, ChevronRight } from "lucide-react";
+import { Search, ChevronDown, Calendar, Filter, ExternalLink, MapPin, DollarSign, Building2, ChevronRight, ArrowDownUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -25,13 +25,11 @@ type FundingEvent = {
 
 // API fetching function
 const fetchFundingEvents = async (filters: any): Promise<FundingEvent[]> => {
-  // Build the query string from the filters object
-  const queryParams = new URLSearchParams();
-  for (const key in filters) {
-    if (filters[key]) {
-      queryParams.append(key, filters[key]);
-    }
-  }
+  // Build the query string from the filters object, removing any empty keys
+  const cleanedFilters = Object.fromEntries(
+    Object.entries(filters).filter(([_, v]) => v != null && v !== '')
+  );
+  const queryParams = new URLSearchParams(cleanedFilters);
 
   const response = await fetch(`/api/events/search?${queryParams.toString()}`);
   if (!response.ok) {
@@ -52,6 +50,7 @@ export default function FundingTrackerContent() {
   });
   const [expandedEvent, setExpandedEvent] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState("desc"); // 'desc' or 'asc'
 
   // Debounce the search term to avoid excessive API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -60,12 +59,13 @@ export default function FundingTrackerContent() {
   const queryFilters = {
     ...selectedFilters,
     searchTerm: debouncedSearchTerm, // Changed from companyName to enable universal search
+    sortOrder: sortOrder,
   };
 
   // Use TanStack Query to fetch, cache, and manage the data
   const { data: fundingEvents = [], isLoading, isError, error } = useQuery<FundingEvent[]>({
     queryKey: ['fundingEvents', queryFilters], // The key includes filters, so it refetches when they change
-    queryFn: () => fetchFundingEvents(queryFilters),
+    queryFn: ({ queryKey }) => fetchFundingEvents(queryKey[1]),
   });
 
   const toggleExpanded = (eventId: number) => {
@@ -214,10 +214,25 @@ export default function FundingTrackerContent() {
 
       {/* Funding Events Display */}
       <div className="space-y-4 mt-8">
-        <div className="flex items-center gap-2 mb-6">
-          <Building2 className="w-5 h-5 text-[var(--botanical-green)]" />
-          <h2 className="text-xl font-semibold text-white">Recent Funding Events</h2>
-          <span className="text-gray-400">({fundingEvents.length} results)</span>
+        <div className="flex items-center justify-between gap-2 mb-6">
+            <div className="flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-[var(--botanical-green)]" />
+                <h2 className="text-xl font-semibold text-white">Recent Funding Events</h2>
+                <span className="text-gray-400">({fundingEvents.length} results)</span>
+            </div>
+            {/* Sort Controls */}
+            <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-400">Sort by date:</span>
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
+                    className="bg-gray-800 border-gray-600 hover:bg-gray-700"
+                >
+                    <ArrowDownUp className="w-4 h-4 mr-2" />
+                    {sortOrder === 'desc' ? 'Newest First' : 'Oldest First'}
+                </Button>
+            </div>
         </div>
 
         {/* Loading and Error States */}
@@ -250,7 +265,7 @@ export default function FundingTrackerContent() {
                   <h3 className="text-lg font-semibold text-white mb-1">{event.CompanyName}</h3>
                   <div className="flex items-center gap-1 text-gray-400 text-sm">
                     <Calendar className="w-3 h-3" />
-                    {new Date(event.FundingDate).toLocaleDateString()}
+                    {event.FundingDate ? new Date(event.FundingDate).toLocaleDateString() : 'Date not available'}
                   </div>
                 </div>
 
@@ -362,4 +377,4 @@ export default function FundingTrackerContent() {
       </div>
     </div>
   );
-} 
+}

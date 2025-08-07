@@ -12,7 +12,7 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 // --- Gemini Parser Function (UPDATED to infer date) ---
-async function parseTextWithGemini(text: string, stage: string, publicationDate: string | null) {
+async function parseTextWithGemini(text: string, stage: string) {
   const generationConfig: GenerationConfig = {
     responseMimeType: "application/json",
   };
@@ -28,7 +28,7 @@ async function parseTextWithGemini(text: string, stage: string, publicationDate:
           "fundingStage": "string",
           "leadInvestors": ["string"],
           "climateTechSector": "string (e.g., Energy, Mobility, Industry. Infer from the company description.)",
-          "announcedAt": "string (Find the specific date for this deal in the text and format it as YYYY-MM-DD. If no specific date is found, use the article's publication date: ${publicationDate}. If neither is available, use null.)"
+          "announcedAt": "string (Find the specific date for this deal in the text and format it as YYYY-MM-DD. If no date is found, use null.)"
         }
         If a value cannot be found, use null. Do not wrap the JSON in markdown backticks.
 
@@ -53,9 +53,6 @@ async function parseTextWithGemini(text: string, stage: string, publicationDate:
     }
 
     const parsed = JSON.parse(responseText);
-    if (parsed.announcedAt === 'null') {
-        parsed.announcedAt = null;
-    }
     return parsed;
   } catch (error) {
     console.error("Error parsing with Gemini:", error);
@@ -122,9 +119,13 @@ async function scrapeAndParse(targetUrl: string) {
 
     for (const deal of dealsToProcess) {
       console.log(`--- Parsing Deal (Stage: ${deal.stage}) ---`);
-      // We no longer pass the date, we ask the AI to find it.
-      const parsedData = await parseTextWithGemini(deal.rawText, deal.stage, publicationDate);
+      const parsedData = await parseTextWithGemini(deal.rawText, deal.stage);
       if (parsedData) {
+        // If the AI returns a non-date (null, undefined, or the string "null"),
+        // apply the article's publication date as the authoritative fallback.
+        if ((!parsedData.announcedAt || parsedData.announcedAt === 'null') && publicationDate) {
+          parsedData.announcedAt = publicationDate;
+        }
         parsedData.sourceUrl = targetUrl;
         allDeals.push(parsedData);
         console.log(`Successfully parsed: ${parsedData.companyName}`);
@@ -135,6 +136,9 @@ async function scrapeAndParse(targetUrl: string) {
 
     if (allDeals.length > 0) {
       console.log(`\n--- Sending ${allDeals.length} deals to the ingest API... ---`);
+      console.log('--- [SCRAPER PAYLOAD] ---');
+      console.log(JSON.stringify({ deals: allDeals }, null, 2));
+      console.log('--------------------------');
       await axios.post(
         'http://localhost:5001/api/ingest-scraped-data', 
         { deals: allDeals },
@@ -151,5 +155,5 @@ async function scrapeAndParse(targetUrl: string) {
 }
 
 // --- Execution ---
-const urlToScrape = 'https://www.ctvc.co/grwm-for-nycw-255/';
+const urlToScrape = 'https://www.ctvc.co/uk-ets-opens-floor-to-carbon-removal-256/';
 scrapeAndParse(urlToScrape);

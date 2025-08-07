@@ -38,7 +38,7 @@ export const processScrapedDataController = async (req: Request, res: Response) 
                     problemStatement: deal.problem,
                     impactMetric: deal.impact,
                 }).returning();
-            }
+            } 
 
             // --- 2. Find or Create the Investors ---
             const investorIds = [];
@@ -52,6 +52,7 @@ export const processScrapedDataController = async (req: Request, res: Response) 
                     investorIds.push(investor.id);
                 }
             }
+            console.log(`Processed ${investorIds.length} investors.`);
 
             // --- 3. Find or Create the Funding Round ---
             const announcedDateStr = deal.announcedAt; // e.g., "2025-06-16"
@@ -93,7 +94,7 @@ export const processScrapedDataController = async (req: Request, res: Response) 
                         .set(updates)
                         .where(eq(fundingRounds.id, fundingRound.id))
                         .returning();
-                }
+                } 
             }
 
             // --- 4. Link Investors to the Funding Round via the "investments" table ---
@@ -114,7 +115,7 @@ export const processScrapedDataController = async (req: Request, res: Response) 
                 }
             }
         } catch (error) {
-            console.error('Error processing deal:', deal.companyName, error);
+            console.error(`Error processing deal: ${deal.companyName}`, error);
         }
     }
     res.status(201).json({ message: `Processing complete. ${createdCount} new funding rounds created, and ${investmentLinksCreated} new investor links established.` });
