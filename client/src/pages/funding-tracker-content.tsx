@@ -1,4 +1,4 @@
-import { Search, ChevronDown, Calendar, Filter, ExternalLink, MapPin, DollarSign, Building2 } from "lucide-react";
+import { Search, ChevronDown, Calendar, Filter, ExternalLink, MapPin, DollarSign, Building2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -56,7 +56,7 @@ export default function FundingTrackerContent() {
   // Combine debounced search term with other filters for the API query
   const queryFilters = {
     ...selectedFilters,
-    companyName: debouncedSearchTerm,
+    searchTerm: debouncedSearchTerm, // Changed from companyName to a general searchTerm
   };
 
   // Use TanStack Query to fetch, cache, and manage the data
@@ -245,12 +245,23 @@ export default function FundingTrackerContent() {
 
         {/* Data Display */}
         {!isLoading && !isError && fundingEvents.map((event) => (
-          <div key={event.EventID} className="bg-gray-900/50 border border-gray-700 rounded-lg overflow-hidden mb-4 hover:border-gray-600 transition-colors">
+          <div key={event.EventID} className="bg-gray-900/50 border border-gray-700 rounded-lg overflow-hidden mb-4 hover:border-[var(--botanical-green)] hover:shadow-lg hover:shadow-[var(--botanical-green)]/10 transition-all duration-200 group">
             {/* Main Event Card */}
             <div 
-              className="p-6 cursor-pointer hover:bg-gray-800/30 transition-colors"
+              className="p-6 cursor-pointer hover:bg-gray-800/50 transition-all duration-200 relative"
               onClick={() => toggleExpanded(event.EventID)}
             >
+              {/* Expand/Collapse Indicator */}
+              <div className="absolute top-4 right-4 flex items-center gap-2 text-gray-400 group-hover:text-[var(--botanical-green)] transition-colors">
+                <span className="text-xs font-medium hidden sm:inline">
+                  {expandedEvent === event.EventID ? 'Collapse' : 'Expand'}
+                </span>
+                <ChevronRight 
+                  className={`w-5 h-5 transition-transform duration-200 ${
+                    expandedEvent === event.EventID ? 'rotate-90' : ''
+                  }`}
+                />
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-center">
                 {/* Company Name & Date */}
                 <div className="lg:col-span-2">
