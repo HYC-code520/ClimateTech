@@ -22,7 +22,8 @@ const db = drizzle(pool, { schema });
 async function main() {
   console.log('Seeding database...');
 
-  // --- Clear existing data to prevent duplicates ---
+  // --- Clear existing data in the correct order ---
+  await db.delete(schema.investments);
   await db.delete(schema.fundingRounds);
   await db.delete(schema.companies);
   await db.delete(schema.investors);
@@ -45,14 +46,28 @@ async function main() {
   console.log('Seeded Companies and Investors.');
 
   // --- Seed Funding Rounds (The Events) ---
-  await db.insert(schema.fundingRounds).values([
-    { companyId: c1.id, investorId: i1.id, stage: 'Series B', amountUsd: 82000000, announcedAt: '2025-03-04', sourceUrl: 'https://example.com/1' },
-    { companyId: c2.id, investorId: i2.id, stage: 'Series A', amountUsd: 12000000, announcedAt: '2025-02-18', sourceUrl: 'https://example.com/2' },
-    { companyId: c3.id, investorId: i3.id, stage: 'Series A', amountUsd: 25000000, announcedAt: '2025-01-20', sourceUrl: 'https://example.com/3' },
-    { companyId: c1.id, investorId: i3.id, stage: 'Series C', amountUsd: 150000000, announcedAt: '2025-05-10', sourceUrl: 'https://example.com/4' },
-  ]);
+  const [fr1, fr2, fr3, fr4] = await db.insert(schema.fundingRounds).values([
+    { companyId: c1.id, stage: 'Series B', amountUsd: 82000000, announcedAt: '2025-03-04', sourceUrl: 'https://example.com/1' },
+    { companyId: c2.id, stage: 'Series A', amountUsd: 12000000, announcedAt: '2025-02-18', sourceUrl: 'https://example.com/2' },
+    { companyId: c3.id, stage: 'Series A', amountUsd: 25000000, announcedAt: '2025-01-20', sourceUrl: 'https://example.com/3' },
+    { companyId: c1.id, stage: 'Series C', amountUsd: 150000000, announcedAt: '2025-05-10', sourceUrl: 'https://example.com/4' },
+  ]).returning();
   
   console.log('Seeded Funding Rounds.');
+
+  // --- Seed Investments (linking investors to rounds) ---
+  await db.insert(schema.investments).values([
+    // Round 1 (Terra B)
+    { fundingRoundId: fr1.id, investorId: i1.id },
+    // Round 2 (VerdeGo A)
+    { fundingRoundId: fr2.id, investorId: i2.id },
+    // Round 3 (SunSpark A)
+    { fundingRoundId: fr3.id, investorId: i3.id },
+    // Round 4 (Terra C)
+    { fundingRoundId: fr4.id, investorId: i3.id },
+  ]);
+  
+  console.log('Seeded Investments.');
 
   console.log('Database seeding complete!');
   await pool.end(); // Close the connection

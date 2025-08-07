@@ -393,15 +393,19 @@ export default function FundingTrackerPage() {
                       </div>
 
                       <h4 className="text-sm font-medium text-gray-300 mb-2">Source</h4>
-                      <a 
-                        href={event.SourceURL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-[var(--botanical-green)] hover:text-[var(--botanical-light)] transition-colors"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                        View Source
-                      </a>
+                      {event.SourceURL ? (
+                        <a 
+                          href={event.SourceURL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-[var(--botanical-green)] hover:text-[var(--botanical-light)] transition-colors"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          View Source
+                        </a>
+                      ) : (
+                        <p className="text-white/60">No source available</p>
+                      )}
                     </div>
                   </div>
                 </div>
