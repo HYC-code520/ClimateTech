@@ -6,53 +6,63 @@ interface InvestorTimelineProps {
   data: {
     date: string;
     amount: number;
+    companyName?: string;
+    stage?: string;
   }[];
+  investorName: string;
 }
 
-export function InvestorTimeline({ data }: InvestorTimelineProps) {
-  // Configuration for the chart's visual style
-  const chartConfig = {
-    line: {
-      theme: {
-        light: "var(--botanical-green)",
-        dark: "var(--botanical-green)",
-      },
-    },
-  }
-
+export function InvestorTimeline({ data, investorName }: InvestorTimelineProps) {
   return (
-    <div className="w-full h-[200px]">
-      <ChartContainer config={chartConfig}>
-        <LineChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+    <div className="w-full h-[250px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
           <Line 
             type="monotone" 
             dataKey="amount" 
             stroke="var(--botanical-green)" 
-            strokeWidth={2}
-            dot={{ fill: "var(--botanical-green)", r: 4 }}
+            strokeWidth={3}
+            dot={{ fill: "var(--botanical-green)", strokeWidth: 2, r: 6 }}
+            activeDot={{ r: 8, fill: "var(--botanical-green)" }}
           />
           <XAxis 
             dataKey="date" 
             stroke="#666"
-            tickFormatter={(date) => new Date(date).toLocaleDateString(undefined, { month: 'short', year: '2-digit' })}
+            fontSize={12}
+            tickFormatter={(date) => {
+              const d = new Date(date);
+              return `${d.getMonth() + 1}/${d.getFullYear().toString().slice(-2)}`;
+            }}
           />
           <YAxis 
             stroke="#666"
-            tickFormatter={(value) => `$${value}M`}
+            fontSize={12}
+            tickFormatter={(value) => `$${value.toFixed(0)}M`}
           />
           <Tooltip
             contentStyle={{
               backgroundColor: "#1f2937",
               border: "1px solid #374151",
-              borderRadius: "6px",
+              borderRadius: "8px",
+              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
             }}
-            labelStyle={{ color: "#9ca3af" }}
-            itemStyle={{ color: "#fff" }}
-            formatter={(value: number) => [`$${value}M`, "Amount"]}
-            labelFormatter={(date) => new Date(date).toLocaleDateString()}
+            labelStyle={{ color: "#9ca3af", fontSize: "12px" }}
+            itemStyle={{ color: "#fff", fontSize: "14px" }}
+            formatter={(value: number, name, props) => [
+              `$${value.toFixed(1)}M`,
+              "Investment Amount"
+            ]}
+            labelFormatter={(date) => {
+              const d = new Date(date);
+              return d.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+              });
+            }}
           />
         </LineChart>
-      </ChartContainer>
+      </ResponsiveContainer>
     </div>
   )
 } 

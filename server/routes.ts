@@ -5,10 +5,12 @@ import { loginSchema, signupSchema } from "@shared/schema";
 import { ZodError } from "zod";
 import eventRoutes from './routes/eventRoutes';
 import pipelineRoutes from './routes/pipelineRoutes';
+import investorRoutes from './routes/investorRoutes';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api', eventRoutes);
   app.use('/api', pipelineRoutes);
+  app.use('/api/investors', investorRoutes);
   // Auth routes
   app.post("/api/auth/login", async (req, res) => {
     try {
