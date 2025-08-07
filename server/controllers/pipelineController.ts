@@ -1,7 +1,7 @@
 // server/controllers/pipelineController.ts
 import { Request, Response } from 'express';
 import { db } from '../db';
-import { companies, investors, fundingRounds } from '../../shared/schema';
+import { companies, investors, fundingRounds, investments } from '../../shared/schema';
 import { eq, and } from 'drizzle-orm';
 
 // A helper function to parse strings like "$50M" or "€25m" into an integer
@@ -47,23 +47,46 @@ export const processScrapedDataController = async (req: Request, res: Response) 
                 investorIds.push(investor.id);
             }
 
-            // --- 3. Create the Funding Round Event (for each investor) ---
-            for (const investorId of investorIds) {
-                // Check if this specific round already exists to avoid duplicates
-                const [existingRound] = await db.select().from(fundingRounds)
-                    .where(and(eq(fundingRounds.companyId, company.id), eq(fundingRounds.investorId, investorId), eq(fundingRounds.stage, deal.fundingStage)));
-                
-                if (!existingRound) {
-                    await db.insert(fundingRounds).values({
-                        companyId: company.id,
-                        investorId: investorId,
-                        stage: deal.fundingStage,
-                        amountUsd: parseAmount(deal.amountRaisedRaw),
-                        // announcedAt and sourceUrl can be added here if scraped
-                    });
-                    createdCount++;
-                }
+            // --- 3. Find existing funding round ---
+            const parsedAmount = parseAmount(deal.amountRaisedRaw);
+            if (parsedAmount === null) {
+                console.error('Skipping deal with unparseable amount:', deal.companyName);
+                continue;
             }
+
+            let [fundingRound] = await db.select().from(fundingRounds)
+                .where(and(
+                    eq(fundingRounds.companyId, company.id),
+                    eq(fundingRounds.stage, deal.fundingStage),
+                    eq(fundingRounds.amountUsd, parsedAmount)
+                ));
+
+            if (fundingRound) {
+                // --- 4a. If it exists, UPDATE it ---
+                await db.update(fundingRounds)
+                    .set({ sourceUrl: deal.sourceUrl })
+                    .where(eq(fundingRounds.id, fundingRound.id));
+            } else {
+                // --- 4b. If it does NOT exist, INSERT it ---
+                [fundingRound] = await db.insert(fundingRounds).values({
+                    companyId: company.id,
+                    stage: deal.fundingStage,
+                    amountUsd: parsedAmount,
+                    sourceUrl: deal.sourceUrl,
+                }).returning();
+            }
+
+            // --- 5. Create the Investment links (if they don't exist) ---
+            for (const investorId of investorIds) {
+                await db.insert(investments)
+                    .values({
+                        fundingRoundId: fundingRound.id,
+                        investorId: investorId,
+                    })
+                    .onConflictDoNothing(); // This is fine, prevents duplicate links
+            }
+            createdCount++; // Counting this as a processed event
+
         } catch (error) {
             console.error('Error processing deal:', deal.companyName, error);
         }
