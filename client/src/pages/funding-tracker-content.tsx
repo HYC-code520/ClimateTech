@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "../hooks/use-debounce";
+import { StageSelect } from "@/components/stage-select";
+import { SectorSelect } from "@/components/sector-select";
+import { getStageColor, getSectorColor } from "@/lib/color-schemes";
 
 // Define the shape of a single funding event based on our API contract
 type FundingEvent = {
@@ -104,43 +107,21 @@ export default function FundingTrackerContent() {
           </div>
 
           {/* Sector Filter */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Sector</label>
-            <div className="relative">
-              <select 
-                value={selectedFilters.sector}
-                onChange={(e) => setSelectedFilters({...selectedFilters, sector: e.target.value})}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:border-[var(--botanical-green)] focus:outline-none appearance-none"
-              >
-                <option value="">All Sectors</option>
-                <option value="Energy">Energy</option>
-                <option value="Mobility">Mobility</option>
-                <option value="Food & Ag">Food & Ag</option>
-                <option value="Carbon Tech">Carbon Tech</option>
-                <option value="Water Tech">Water Tech</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
-            </div>
+          <div className="space-y-2">
+            <label className="text-sm text-gray-400">Sector</label>
+            <SectorSelect
+              value={selectedFilters.sector}
+              onValueChange={(value) => setSelectedFilters(prev => ({ ...prev, sector: value }))}
+            />
           </div>
 
           {/* Funding Stage Filter */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Funding Stage</label>
-            <div className="relative">
-              <select 
-                value={selectedFilters.fundingStage}
-                onChange={(e) => setSelectedFilters({...selectedFilters, fundingStage: e.target.value})}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:border-[var(--botanical-green)] focus:outline-none appearance-none"
-              >
-                <option value="">All Stages</option>
-                <option value="Seed">Seed</option>
-                <option value="Series A">Series A</option>
-                <option value="Series B">Series B</option>
-                <option value="Series C">Series C</option>
-                <option value="Grant">Grant</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
-            </div>
+          <div className="space-y-2">
+            <label className="text-sm text-gray-400">Funding Stage</label>
+            <StageSelect
+              value={selectedFilters.fundingStage}
+              onValueChange={(value) => setSelectedFilters(prev => ({ ...prev, fundingStage: value }))}
+            />
           </div>
 
           {/* Country Filter */}
@@ -276,7 +257,15 @@ export default function FundingTrackerContent() {
                 {/* Funding Details */}
                 <div>
                   <div className="text-sm text-gray-400 mb-1">Stage</div>
-                  <div className="px-2 py-1 bg-[var(--botanical-green)]/20 text-[var(--botanical-green)] rounded text-sm inline-block">
+                  <div className="px-2 py-1 rounded text-sm inline-flex items-center gap-2"
+                       style={{ 
+                         backgroundColor: `${getStageColor(event.FundingStage)}20`,
+                         color: getStageColor(event.FundingStage)
+                       }}>
+                    <div 
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: getStageColor(event.FundingStage) }}
+                    />
                     {event.FundingStage}
                   </div>
                 </div>
@@ -293,7 +282,13 @@ export default function FundingTrackerContent() {
 
                 <div>
                   <div className="text-sm text-gray-400 mb-1">Sector</div>
-                  <div className="text-white">{event.ClimateTechSector}</div>
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: getSectorColor(event.ClimateTechSector) }}
+                    />
+                    <span>{event.ClimateTechSector}</span>
+                  </div>
                 </div>
 
                 <div>
