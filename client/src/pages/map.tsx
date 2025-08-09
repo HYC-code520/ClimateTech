@@ -147,6 +147,7 @@ const fetchFundingEvents = async (): Promise<FundingEvent[]> => {
 export default function MapPage() {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
+  const [showAllTop, setShowAllTop] = useState(false);
 
   // Fetch funding events data
   const { data: fundingEvents = [], isLoading, isError } = useQuery<FundingEvent[]>({
@@ -213,11 +214,10 @@ export default function MapPage() {
     };
   };
 
-  // Top countries by funding
-  const topCountries = useMemo(() => {
+  // All countries sorted by funding (we'll slice in render)
+  const sortedCountries = useMemo(() => {
     return Object.entries(countryData)
-      .sort(([,a], [,b]) => b.totalFunding - a.totalFunding)
-      .slice(0, 8);
+      .sort(([, a], [, b]) => b.totalFunding - a.totalFunding);
   }, [countryData]);
 
   if (isLoading) {
@@ -232,7 +232,7 @@ export default function MapPage() {
 
   return (
     <NavbarSidebarLayout>
-      <div className="h-full min-h-screen bg-black text-white p-6">
+      <div className="bg-black text-white p-6">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-white mb-2">Global Climate Tech Map</h1>
@@ -241,7 +241,7 @@ export default function MapPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
           {/* Statistics Panel */}
           <div className="lg:col-span-1 space-y-4">
             <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
@@ -274,8 +274,8 @@ export default function MapPage() {
             {/* Top Countries */}
             <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
               <h4 className="text-lg font-semibold text-white mb-4">Top Countries</h4>
-              <div className="space-y-3">
-                {topCountries.map(([country, data], index) => (
+              <div className={`space-y-3 ${showAllTop ? 'max-h-64 overflow-y-auto pr-1' : ''}`}>
+                {(showAllTop ? sortedCountries : sortedCountries.slice(0, 3)).map(([country, data]) => (
                   <div 
                     key={country}
                     className="flex justify-between items-center p-2 hover:bg-gray-800/50 rounded cursor-pointer"
@@ -299,13 +299,19 @@ export default function MapPage() {
                   </div>
                 ))}
               </div>
+              <button
+                className="mt-3 text-xs text-gray-300 hover:text-white underline"
+                onClick={() => setShowAllTop(v => !v)}
+              >
+                {showAllTop ? 'Show less' : 'Show all'}
+              </button>
             </div>
           </div>
 
           {/* Map */}
           <div className="lg:col-span-3">
-            <div className="bg-gray-900/30 border border-gray-700 rounded-lg p-4 h-full min-h-[600px] relative overflow-hidden">
-              <ComposableMap projection="geoMercator" width={800} height={440} style={{ background: "transparent" }}>
+            <div className="bg-gray-900/30 border border-gray-700 rounded-lg p-4 h-[440px] relative overflow-hidden">
+              <ComposableMap projection="geoMercator" width={800} height={380} style={{ background: "transparent" }}>
                 <Geographies geography="https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json">
                   {({ geographies }) =>
                     geographies.map((geo) => (

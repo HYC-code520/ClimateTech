@@ -97,7 +97,7 @@ export function NavbarSidebarLayout({ children }: NavbarSidebarLayoutProps) {
           
           {/* Main Content Area - this will contain the original page without its header */}
           <div className="flex-1 overflow-auto">
-            <div className="px-8 md:px-12 py-8">
+            <div className="px-8 md:px-12 pt-0 pb-8">
               {children}
             </div>
           </div>
