@@ -14,9 +14,6 @@ const signupSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string().min(8, "Please confirm your password"),
-  userType: z.enum(["investor", "startup"], {
-    required_error: "Please select your account type",
-  }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -30,7 +27,6 @@ interface SignupFormProps {
 
 export function SignupForm({ isMobile = false }: SignupFormProps) {
   const { toast } = useToast();
-  const [selectedUserType, setSelectedUserType] = useState<"investor" | "startup" | null>(null);
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -46,14 +42,13 @@ export function SignupForm({ isMobile = false }: SignupFormProps) {
       const response = await apiRequest("POST", "/api/auth/signup", {
         email: data.email,
         password: data.password,
-        userType: data.userType,
       });
       return response.json();
     },
     onSuccess: (data) => {
       toast({
         title: "Account created successfully",
-        description: `Welcome to ECOLENS! Your ${selectedUserType} account is ready.`,
+        description: "Welcome to ECOLENS! Your account is ready.",
       });
       // Handle successful signup (redirect to login, etc.)
     },
@@ -125,46 +120,6 @@ export function SignupForm({ isMobile = false }: SignupFormProps) {
 
   return (
     <div className="max-w-md w-full">
-      {/* User Type Selection */}
-      <div className="mb-8">
-        <Label className="block text-gray-300 text-xs font-medium mb-4 tracking-widest uppercase">
-          I am a
-        </Label>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedUserType("investor");
-              form.setValue("userType", "investor");
-            }}
-            className={`p-3 rounded-lg border-2 transition-all text-center ${
-              selectedUserType === "investor"
-                ? "border-[var(--botanical-green)] bg-[var(--botanical-green)]/10"
-                : "border-gray-600 hover:border-gray-500"
-            }`}
-          >
-            <div className="text-white font-medium">💰 Investor</div>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedUserType("startup");
-              form.setValue("userType", "startup");
-            }}
-            className={`p-3 rounded-lg border-2 transition-all text-center ${
-              selectedUserType === "startup"
-                ? "border-[var(--botanical-green)] bg-[var(--botanical-green)]/10"
-                : "border-gray-600 hover:border-gray-500"
-            }`}
-          >
-            <div className="text-white font-medium">🚀 Startup</div>
-          </button>
-        </div>
-        {form.formState.errors.userType && (
-          <p className="text-red-400 text-sm mt-2">{form.formState.errors.userType.message}</p>
-        )}
-      </div>
-
       <div className="mb-12">
         <h1 className="text-5xl font-light text-white mb-4">Join ECOLENS</h1>
         <p className="text-gray-400 text-sm">

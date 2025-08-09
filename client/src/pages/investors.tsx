@@ -1,9 +1,11 @@
 import { NavbarSidebarLayout } from "@/components/ui/navbar-sidebar-layout";
 import { InvestorCard } from "@/components/investor-card";
 import { InvestorFilters } from "@/components/investor-filters";
+import { InvestorComparison } from "@/components/investor-comparison";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, GitCompare, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // API fetching function
 const fetchInvestors = async () => {
@@ -24,10 +26,44 @@ export default function InvestorsPage() {
     sortBy: "name"
   });
 
+  // New state for comparison feature
+  const [selectedInvestors, setSelectedInvestors] = useState<number[]>([]);
+  const [comparisonMode, setComparisonMode] = useState(false);
+
   const { data: investors = [], isLoading, isError } = useQuery({
     queryKey: ['investors'],
     queryFn: fetchInvestors,
   });
+
+  // Toggle investor selection
+  const toggleInvestorSelection = (investorId: number) => {
+    setSelectedInvestors(prev => {
+      if (prev.includes(investorId)) {
+        return prev.filter(id => id !== investorId);
+      } else {
+        // Limit to 2 investors for comparison
+        if (prev.length < 2) {
+          return [...prev, investorId];
+        } else {
+          // Replace the first selected with the new one
+          return [prev[1], investorId];
+        }
+      }
+    });
+  };
+
+  // Clear all selections
+  const clearSelections = () => {
+    setSelectedInvestors([]);
+    setComparisonMode(false);
+  };
+
+  // Start comparison
+  const startComparison = () => {
+    if (selectedInvestors.length === 2) {
+      setComparisonMode(true);
+    }
+  };
 
   // Filter and sort investors based on current filters
   const filteredInvestors = useMemo(() => {
@@ -81,16 +117,69 @@ export default function InvestorsPage() {
     return filtered;
   }, [investors, filters]);
 
+  // Get selected investors for comparison
+  const selectedInvestorsData = filteredInvestors.filter(inv => selectedInvestors.includes(inv.id));
+
+  // If in comparison mode, show comparison view
+  if (comparisonMode && selectedInvestorsData.length === 2) {
+    return (
+      <NavbarSidebarLayout>
+        <InvestorComparison 
+          investors={selectedInvestorsData}
+          onClose={() => setComparisonMode(false)}
+        />
+      </NavbarSidebarLayout>
+    );
+  }
+
   return (
     <NavbarSidebarLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Investors</h1>
-          <p className="text-gray-400">
-            Track investment patterns and funding timelines • {filteredInvestors.length} investors
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Investors</h1>
+            <p className="text-gray-400">
+              Track investment patterns and funding timelines • {filteredInvestors.length} investors
+            </p>
+          </div>
+          
+          {/* Comparison Controls */}
+          <div className="flex items-center gap-4">
+            {selectedInvestors.length > 0 && (
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <span>{selectedInvestors.length}/2 selected</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearSelections}
+                  className="text-gray-400 hover:text-[var(--botanical-green)]"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+            
+            {selectedInvestors.length === 2 && (
+              <Button
+                onClick={startComparison}
+                className="bg-[var(--botanical-green)] hover:bg-[var(--botanical-dark)] text-white"
+              >
+                <GitCompare className="w-4 h-4 mr-2" />
+                Compare Investors
+              </Button>
+            )}
+          </div>
         </div>
+        
+        {/* Comparison Hint */}
+        {selectedInvestors.length === 0 && (
+          <div className="bg-[var(--botanical-green)]/10 border-2 border-[var(--botanical-green)] rounded-lg p-4">
+            <p className="text-[var(--botanical-green)] text-sm">
+              💡 <strong>Tip:</strong> Select any two investors by clicking the checkboxes to compare their investment timelines side-by-side.
+            </p>
+          </div>
+        )}
         
         {/* Filters */}
         <InvestorFilters onFiltersChange={setFilters} />
@@ -112,7 +201,13 @@ export default function InvestorsPage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {filteredInvestors.map((investor: any) => (
-              <InvestorCard key={investor.id} investor={investor} />
+              <InvestorCard 
+                key={investor.id} 
+                investor={investor}
+                isSelected={selectedInvestors.includes(investor.id)}
+                onToggleSelection={() => toggleInvestorSelection(investor.id)}
+                selectionMode={selectedInvestors.length > 0}
+              />
             ))}
           </div>
         )}
