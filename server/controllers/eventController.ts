@@ -3,7 +3,7 @@
 import { Request, Response } from 'express';
 import { db } from '../db';
 import { companies, investors, fundingRounds, investments } from '../../shared/schema';
-import { sql, eq, ilike, and, or, gte, lte, exists } from 'drizzle-orm'; // Add 'exists'
+import { sql, eq, ilike, and, or, gte, lte, exists, asc, desc } from 'drizzle-orm'; // Add asc, desc
 
 export const searchEventsController = async (req: Request, res: Response) => {
   try {
@@ -14,7 +14,8 @@ export const searchEventsController = async (req: Request, res: Response) => {
         searchTerm, // Universal search parameter
         companyName, investorName, stage, sector, country, tags, // Keep existing for compatibility
         startDate,
-        endDate
+        endDate,
+        sortOrder // 'asc' or 'desc'
     } = req.query;
 
     let query = db
@@ -139,6 +140,14 @@ export const searchEventsController = async (req: Request, res: Response) => {
       finalQuery.having(and(...havingConditions));
     }
     
+    // --- Add Sorting ---
+    // Default to descending date order if not specified
+    if (sortOrder === 'asc') {
+        finalQuery.orderBy(asc(fundingRounds.announcedAt));
+    } else {
+        finalQuery.orderBy(desc(fundingRounds.announcedAt));
+    }
+
     const results = await finalQuery;
 
     console.log(`Query successful, found ${results.length} results.`);
