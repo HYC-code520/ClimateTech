@@ -153,7 +153,7 @@ export default function InvestorsPage() {
                   variant="ghost"
                   size="sm"
                   onClick={clearSelections}
-                  className="text-gray-400 hover:text-white"
+                  className="text-gray-400 hover:text-[var(--botanical-green)]"
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -174,8 +174,8 @@ export default function InvestorsPage() {
         
         {/* Comparison Hint */}
         {selectedInvestors.length === 0 && (
-          <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
-            <p className="text-blue-300 text-sm">
+          <div className="bg-[var(--botanical-green)]/10 border-2 border-[var(--botanical-green)] rounded-lg p-4">
+            <p className="text-[var(--botanical-green)] text-sm">
               💡 <strong>Tip:</strong> Select any two investors by clicking the checkboxes to compare their investment timelines side-by-side.
             </p>
           </div>

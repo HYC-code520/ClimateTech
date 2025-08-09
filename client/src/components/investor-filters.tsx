@@ -101,10 +101,10 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
 
         {/* Advanced Filters Toggle */}
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="border-gray-600 text-gray-300 hover:bg-gray-700"
+          className="border-2 border-[var(--botanical-green)] text-[var(--botanical-green)] hover:border-[var(--botanical-green)] hover:bg-[var(--botanical-green)]/10 hover:text-[var(--botanical-green)] !bg-transparent !border-[var(--botanical-green)]"
         >
           <Filter className="w-4 h-4 mr-2" />
           {showAdvanced ? 'Hide' : 'More'} Filters
@@ -115,7 +115,7 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
           variant="ghost"
           size="sm"
           onClick={clearFilters}
-          className="text-gray-400 hover:text-white"
+          className="text-[var(--botanical-green)]/70 hover:text-[var(--botanical-green)] hover:bg-[var(--botanical-green)]/10"
         >
           Clear All
         </Button>
