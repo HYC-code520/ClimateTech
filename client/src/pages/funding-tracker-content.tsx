@@ -1,4 +1,4 @@
-import { Search, ChevronDown, Calendar, Filter, ExternalLink, MapPin, DollarSign, Building2, ChevronRight, ArrowDownUp } from "lucide-react";
+import { Search, ChevronDown, Calendar, Filter, ExternalLink, MapPin, DollarSign, Building2, ChevronRight, ArrowDownUp, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -6,6 +6,8 @@ import { useDebounce } from "../hooks/use-debounce";
 import { StageSelect } from "@/components/stage-select";
 import { SectorSelect } from "@/components/sector-select";
 import { getStageColor, getSectorColor } from "@/lib/color-schemes";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 // Define the shape of a single funding event based on our API contract
 type FundingEvent = {
@@ -75,14 +77,48 @@ export default function FundingTrackerContent() {
     setExpandedEvent(expandedEvent === eventId ? null : eventId);
   };
 
+  const { toast } = useToast();
+  const feedbackEmail = import.meta.env.VITE_FEEDBACK_EMAIL || ""; // optional
+
+  async function submitChangeRequest(evt: any, field: string, newValue: string, reason?: string) {
+    const payload = {
+      eventId: evt.EventID,
+      company: evt.CompanyName,
+      field,
+      oldValue: (evt as any)[field] ?? null,
+      newValue,
+      reason: reason || "",
+      timestamp: new Date().toISOString(),
+      page: window.location.href,
+    };
+
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      if (feedbackEmail) {
+        const subject = `Change request: ${evt.CompanyName} (${evt.EventID})`;
+        const body = JSON.stringify(payload, null, 2);
+        const mailto = `mailto:${feedbackEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.open(mailto, "_blank");
+      }
+      toast({
+        title: "Change request prepared",
+        description: feedbackEmail
+          ? "Email draft opened. JSON also copied to clipboard."
+          : "Copied to clipboard. Paste into email/Slack.",
+      });
+    } catch {
+      toast({ title: "Couldn’t copy to clipboard", variant: "destructive" });
+    }
+  }
+
   return (
     <div className="max-w-full">
       {/* Page Title */}
       <div className="mb-8">
-        <h1 className="text-4xl md:text-6xl text-white leading-none tracking-tight font-semibold mb-4">
+        <h1 className="text-3xl font-bold text-white mb-2">
           Funding Tracker
         </h1>
-        <p className="text-xl text-white/80 max-w-2xl">
+        <p className="text-gray-400">
           Track climate tech funding rounds, investments, and market trends in real-time.
         </p>
       </div>
@@ -250,7 +286,7 @@ export default function FundingTrackerContent() {
           <div key={event.EventID} className="bg-gray-900/50 border border-gray-700 rounded-lg overflow-hidden mb-4 hover:border-[var(--botanical-green)] hover:shadow-lg hover:shadow-[var(--botanical-green)]/10 transition-all duration-200 group">
             {/* Main Event Card */}
             <div 
-              className="p-6 cursor-pointer hover:bg-gray-800/50 transition-all duration-200 relative"
+              className="p-6 pb-16 cursor-pointer hover:bg-gray-800/50 transition-all duration-200 relative"
               onClick={() => toggleExpanded(event.EventID)}
             >
               {/* Expand/Collapse Indicator */}
@@ -265,6 +301,72 @@ export default function FundingTrackerContent() {
                 />
               </div>
               
+              {/* Suggest edit – bottom-right before expansion */}
+              <div className="absolute bottom-4 right-4" onClick={(e) => e.stopPropagation()}>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button className="px-3 py-1 text-sm bg-gray-800 border border-gray-600 rounded hover:bg-gray-700 flex items-center gap-2">
+                      <Pencil className="w-4 h-4" />
+                      Suggest edit
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-gray-900 border border-gray-700">
+                    <DialogHeader>
+                      <DialogTitle className="text-white font-bold">
+                        Suggest an edit
+                      </DialogTitle>
+                    </DialogHeader>
+
+                    <form
+                      className="space-y-4"
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        const form = e.currentTarget as HTMLFormElement;
+                        const field = (form.elements.namedItem("field") as HTMLSelectElement).value;
+                        const newValue = (form.elements.namedItem("newValue") as HTMLInputElement).value;
+                        const reason = (form.elements.namedItem("reason") as HTMLTextAreaElement).value;
+                        await submitChangeRequest(event, field, newValue, reason);
+                      }}
+                    >
+                      <div className="space-y-2">
+                        <label className="text-sm text-gray-400">Field</label>
+                        <select name="field" className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white">
+                          <option value="CompanyName">Company Name</option>
+                          <option value="FundingDate">Funding Date</option>
+                          <option value="FundingStage">Funding Stage</option>
+                          <option value="AmountRaisedUSD">Amount (USD)</option>
+                          <option value="LeadInvestors">Lead Investors</option>
+                          <option value="ClimateTechSector">Sector</option>
+                          <option value="Country">Country</option>
+                          <option value="SourceURL">Source URL</option>
+                          <option value="Problem">Problem</option>
+                          <option value="Tags">Tags</option>
+                        </select>
+                        <div className="text-xs text-gray-500">
+                          Current: <span className="text-gray-300">{String((event as any)[(document?.querySelector('select[name=\"field\"]') as HTMLSelectElement)?.value] ?? '')}</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm text-gray-400">New value</label>
+                        <input name="newValue" className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white" required />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm text-gray-400">Reason (optional)</label>
+                        <textarea name="reason" rows={3} className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white" />
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button type="submit" className="px-4 py-2 bg-[var(--botanical-green)] hover:bg-[var(--botanical-dark)] rounded">
+                          Submit
+                        </button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-center">
                 {/* Company Name & Date */}
                 <div className="lg:col-span-2">
