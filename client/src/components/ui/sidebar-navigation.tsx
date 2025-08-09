@@ -1,13 +1,10 @@
-import { 
-  TrendingUp, 
-  LayoutDashboard, 
-  Users, 
-  Rocket, 
-  Building2, 
-  MapPin, 
-  Database, 
-  Settings, 
-  HelpCircle 
+import {
+  TrendingUp,
+  Users,
+  Rocket,
+  MapPin,
+  Settings,
+  HelpCircle
 } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -26,12 +23,6 @@ export function SidebarNavigation({ className = "" }: SidebarNavigationProps) {
       active: location === "/funding-tracker"
     },
     {
-      icon: LayoutDashboard,
-      label: "Dashboard",
-      path: "/dashboard",
-      active: location === "/dashboard"
-    },
-    {
       icon: Users,
       label: "Investors",
       path: "/investors",
@@ -44,22 +35,10 @@ export function SidebarNavigation({ className = "" }: SidebarNavigationProps) {
       active: location === "/startups"
     },
     {
-      icon: Building2,
-      label: "Sectors",
-      path: "/sectors",
-      active: location === "/sectors"
-    },
-    {
       icon: MapPin,
       label: "Map View",
       path: "/map",
       active: location === "/map"
-    },
-    {
-      icon: Database,
-      label: "Source Data",
-      path: "/source-data",
-      active: location === "/source-data"
     }
   ];
 
