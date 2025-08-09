@@ -344,8 +344,6 @@ export default function FundingTrackerContent() {
                     <h4 className="text-sm font-medium text-gray-300 mb-2">Problem Statement</h4>
                     <p className="text-white mb-4">{event.Problem || 'No description available'}</p>
 
-                    <h4 className="text-sm font-medium text-gray-300 mb-2">Impact Metric</h4>
-                    <p className="text-[var(--botanical-green)]">{event.ImpactMetric || 'No impact metric available'}</p>
                   </div>
 
                   <div>

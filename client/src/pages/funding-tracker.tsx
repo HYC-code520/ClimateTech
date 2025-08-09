@@ -381,8 +381,6 @@ export default function FundingTrackerPage() {
                       <h4 className="text-sm font-medium text-gray-300 mb-2">Problem Statement</h4>
                       <p className="text-white mb-4">{event.Problem}</p>
 
-                      <h4 className="text-sm font-medium text-gray-300 mb-2">Impact Metric</h4>
-                      <p className="text-[var(--botanical-green)]">{event.ImpactMetric}</p>
                     </div>
 
                     <div>
