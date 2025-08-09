@@ -11,6 +11,7 @@ interface InvestorFiltersProps {
     maxInvestments: string;
     preferredStage: string;
     sector: string;
+    checkSize: string;
     sortBy: string;
   }) => void;
 }
@@ -20,8 +21,9 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
     searchTerm: "",
     minInvestments: "",
     maxInvestments: "",
-    preferredStage: "",
-    sector: "",
+    preferredStage: "all",
+    sector: "all",
+    checkSize: "all",
     sortBy: "name"
   });
 
@@ -30,7 +32,16 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
   const updateFilters = (newFilters: Partial<typeof filters>) => {
     const updated = { ...filters, ...newFilters };
     setFilters(updated);
-    onFiltersChange(updated);
+    
+    // Convert "all" values to empty strings for filtering logic
+    const filtersForParent = {
+      ...updated,
+      preferredStage: updated.preferredStage === "all" ? "" : updated.preferredStage,
+      sector: updated.sector === "all" ? "" : updated.sector,
+      checkSize: updated.checkSize === "all" ? "" : updated.checkSize,
+    };
+    
+    onFiltersChange(filtersForParent);
   };
 
   const clearFilters = () => {
@@ -38,12 +49,22 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
       searchTerm: "",
       minInvestments: "",
       maxInvestments: "",
-      preferredStage: "",
-      sector: "",
+      preferredStage: "all",
+      sector: "all",
+      checkSize: "all",
       sortBy: "name"
     };
     setFilters(cleared);
-    onFiltersChange(cleared);
+    
+    // Convert "all" values to empty strings for filtering logic
+    const clearedForParent = {
+      ...cleared,
+      preferredStage: "",
+      sector: "",
+      checkSize: "",
+    };
+    
+    onFiltersChange(clearedForParent);
   };
 
   return (
@@ -132,7 +153,7 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
                 <SelectValue placeholder="Any stage" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Any Stage</SelectItem>
+                <SelectItem value="all">Any Stage</SelectItem>
                 <SelectItem value="Seed">Seed</SelectItem>
                 <SelectItem value="Series A">Series A</SelectItem>
                 <SelectItem value="Series B">Series B</SelectItem>
@@ -150,7 +171,7 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
                 <SelectValue placeholder="Any sector" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Any Sector</SelectItem>
+                <SelectItem value="all">Any Sector</SelectItem>
                 <SelectItem value="Energy">Energy</SelectItem>
                 <SelectItem value="Transportation">Transportation</SelectItem>
                 <SelectItem value="Food & Agriculture">Food & Agriculture</SelectItem>
@@ -164,12 +185,12 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
           {/* Investment Size */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-300">Typical Check Size</label>
-            <Select>
+            <Select value={filters.checkSize} onValueChange={(value) => updateFilters({ checkSize: value })}>
               <SelectTrigger className="bg-gray-800 border-gray-600">
                 <SelectValue placeholder="Any size" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Any Size</SelectItem>
+                <SelectItem value="all">Any Size</SelectItem>
                 <SelectItem value="small">$1M - $5M</SelectItem>
                 <SelectItem value="medium">$5M - $20M</SelectItem>
                 <SelectItem value="large">$20M - $100M</SelectItem>

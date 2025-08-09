@@ -29,7 +29,10 @@ const fetchFundingEvents = async (filters: any): Promise<FundingEvent[]> => {
   const cleanedFilters = Object.fromEntries(
     Object.entries(filters).filter(([_, v]) => v != null && v !== '')
   );
-  const queryParams = new URLSearchParams(cleanedFilters);
+  const queryParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(cleanedFilters)) {
+    queryParams.append(key, String(value));
+  }
 
   const response = await fetch(`/api/events/search?${queryParams.toString()}`);
   if (!response.ok) {
@@ -98,7 +101,7 @@ export default function FundingTrackerContent() {
               <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search companies, investors, or keywords..."
+                placeholder="Search companies, investors, or tags..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:border-[var(--botanical-green)] focus:outline-none"
@@ -196,15 +199,18 @@ export default function FundingTrackerContent() {
         {/* Clear Filters Button */}
         <div className="mt-4 flex justify-end">
           <Button
-            onClick={() => setSelectedFilters({
-              sector: "",
-              fundingStage: "",
-              country: "",
-              investorName: "",
-              startDate: "",
-              endDate: "",
-              tags: ""
-            })}
+            onClick={() => {
+              setSelectedFilters({
+                sector: "",
+                fundingStage: "",
+                country: "",
+                investorName: "",
+                startDate: "",
+                endDate: "",
+                tags: ""
+              });
+              setSearchTerm(""); // Also clear the search term
+            }}
             className="bg-transparent border border-gray-600 text-white hover:bg-gray-800 transition-colors"
           >
             Clear Filters

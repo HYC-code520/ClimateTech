@@ -1,5 +1,6 @@
 import { InvestorTimeline } from "./charts/investor-timeline";
 import { TrendingUp, DollarSign, Hash } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface InvestorCardProps {
   investor: {
@@ -14,14 +15,35 @@ interface InvestorCardProps {
     totalInvested: number;
     investmentCount: number;
   };
+  isSelected?: boolean;
+  onToggleSelection?: () => void;
+  selectionMode?: boolean;
 }
 
-export function InvestorCard({ investor }: InvestorCardProps) {
+export function InvestorCard({ 
+  investor, 
+  isSelected = false, 
+  onToggleSelection, 
+  selectionMode = false 
+}: InvestorCardProps) {
   return (
-    <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-colors">
+    <div className={`bg-gray-900/50 border rounded-lg p-6 transition-all duration-200 ${
+      isSelected 
+        ? 'border-[var(--botanical-green)] bg-[var(--botanical-green)]/5 ring-2 ring-[var(--botanical-green)]/20' 
+        : 'border-gray-700 hover:border-gray-600'
+    }`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-semibold text-white">{investor.name}</h3>
+        <div className="flex items-center gap-3">
+          {selectionMode && onToggleSelection && (
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={onToggleSelection}
+              className="data-[state=checked]:bg-[var(--botanical-green)] data-[state=checked]:border-[var(--botanical-green)]"
+            />
+          )}
+          <h3 className="text-xl font-semibold text-white">{investor.name}</h3>
+        </div>
         <div className="flex items-center gap-4 text-sm text-gray-400">
           <div className="flex items-center gap-1">
             <Hash className="w-4 h-4" />
