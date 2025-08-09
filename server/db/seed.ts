@@ -9,11 +9,11 @@ import * as dotenv from 'dotenv';
 // Load environment variables from .env file
 dotenv.config();
 
-// IMPORTANT: Use your actual Neon connection string from your environment variables
-const connectionString = process.env.DATABASE_URL;
+// Use Supabase Postgres connection string
+const connectionString = process.env.DATABASE_URL || process.env.SUPABASE_DB_URL;
 
 if (!connectionString) {
-  throw new Error('DATABASE_URL environment variable is not set!');
+  throw new Error('DATABASE_URL or SUPABASE_DB_URL environment variable is not set!');
 }
 
 const pool = new Pool({ connectionString });
