@@ -9,20 +9,34 @@ import * as dotenv from 'dotenv';
 // Load environment variables from .env file
 dotenv.config();
 
-// IMPORTANT: Use your actual Neon connection string from your environment variables
-const connectionString = process.env.DATABASE_URL;
+// Use Supabase PostgreSQL connection string
+const connectionString = process.env.SUPABASE_DB_URL;
 
 if (!connectionString) {
-  throw new Error('DATABASE_URL environment variable is not set!');
+  throw new Error('SUPABASE_DB_URL environment variable is not set!');
 }
 
-const pool = new Pool({ connectionString });
+const pool = new Pool({ 
+  connectionString,
+  ssl: {
+    rejectUnauthorized: false
+  },
+  max: 1, // Use only 1 connection for seeding
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
+});
 const db = drizzle(pool, { schema });
 
 async function main() {
   console.log('Seeding database...');
+  
+  try {
+    // Test the connection first
+    const client = await pool.connect();
+    console.log('Successfully connected to database');
+    client.release();
 
-  // --- Clear existing data in the correct order ---
+    // --- Clear existing data in the correct order ---
   await db.delete(schema.investments);
   await db.delete(schema.fundingRounds);
   await db.delete(schema.companies);
@@ -69,11 +83,12 @@ async function main() {
   
   console.log('Seeded Investments.');
 
-  console.log('Database seeding complete!');
-  await pool.end(); // Close the connection
+    console.log('Database seeding complete!');
+    await pool.end(); // Close the connection
+  } catch (err) {
+    console.error('Error during seeding:', err);
+    process.exit(1);
+  }
 }
 
-main().catch((err) => {
-  console.error('Error during seeding:', err);
-  process.exit(1);
-});
+main();

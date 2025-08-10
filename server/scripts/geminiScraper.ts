@@ -23,6 +23,7 @@ async function parseTextWithGemini(text: string, stage: string) {
         Extract the information into a JSON object using this exact schema:
         {
           "companyName": "string",
+          "city": "string (Extract or infer the company's headquarters city from the text)",
           "country": "string (The country, inferred from the city or text)",
           "amountRaisedRaw": "string (e.g., '$12M', '€25M')",
           "fundingStage": "string",
@@ -61,7 +62,7 @@ async function parseTextWithGemini(text: string, stage: string) {
 }
 
 // --- The Main Scraping Function ---
-async function scrapeAndParse(targetUrl: string) {
+export async function scrapeAndParse(targetUrl: string) {
   try {
     console.log(`Fetching data from ${targetUrl}...`);
     const response = await axios.get(targetUrl);
@@ -139,11 +140,16 @@ async function scrapeAndParse(targetUrl: string) {
       console.log('--- [SCRAPER PAYLOAD] ---');
       console.log(JSON.stringify({ deals: allDeals }, null, 2));
       console.log('--------------------------');
-      await axios.post(
+      console.log('About to send to API...');
+      const response = await axios.post(
         'http://localhost:5001/api/ingest-scraped-data', 
         { deals: allDeals },
-        { headers: { 'x-api-key': process.env.INTERNAL_PIPELINE_KEY } }
+        { 
+          headers: { 'x-api-key': process.env.INTERNAL_PIPELINE_KEY },
+          timeout: 10000 // 10 second timeout
+        }
       );
+      console.log('API Response:', response.data);
       console.log('--- Successfully sent data to API. ---');
     } else {
       console.log('--- No deals were successfully parsed to send. ---');

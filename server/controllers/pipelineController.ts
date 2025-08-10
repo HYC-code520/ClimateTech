@@ -1,8 +1,6 @@
 // server/controllers/pipelineController.ts
 import { Request, Response } from 'express';
-import { db } from '../db';
-import { companies, investors, fundingRounds, investments } from '../../shared/schema';
-import { eq, and } from 'drizzle-orm';
+import { supabase } from '../db/supabase';
 
 // A helper function to parse strings like "$50M" or "€25m" into an integer
 function parseAmount(amountStr: string): number | null {
@@ -29,26 +27,88 @@ export const processScrapedDataController = async (req: Request, res: Response) 
     for (const deal of deals) {
         try {
             // --- 1. Find or Create the Company ---
-            let [company] = await db.select().from(companies).where(eq(companies.name, deal.companyName));
-            if (!company) {
-                [company] = await db.insert(companies).values({
-                    name: deal.companyName,
-                    country: deal.country,
-                    industry: deal.climateTechSector,
-                    problemStatement: deal.problem,
-                    impactMetric: deal.impact,
-                }).returning();
-            } 
+            let { data: company, error: companyError } = await supabase
+                .from('companies')
+                .select()
+                .eq('name', deal.companyName)
+                .single();
+
+            if (companyError && companyError.code === 'PGRST116') { // no rows returned
+                const { data: newCompany, error: insertError } = await supabase
+                    .from('companies')
+                    .insert({
+                        name: deal.companyName,
+                        city: deal.city,
+                        country: deal.country,
+                        industry: deal.climateTechSector,
+                        problem_statement: deal.problem,
+                        impact_metric: deal.impact,
+                    })
+                    .select()
+                    .single();
+
+                if (insertError) throw insertError;
+                company = newCompany;
+            } else if (!companyError) {
+                // Update existing company with new information if we have it
+                const updates: any = {};
+                if (deal.city && !company.city) {
+                    updates.city = deal.city;
+                }
+                if (deal.country && !company.country) {
+                    updates.country = deal.country;
+                }
+                if (deal.climateTechSector && !company.industry) {
+                    updates.industry = deal.climateTechSector;
+                }
+                if (deal.problem && !company.problem_statement) {
+                    updates.problem_statement = deal.problem;
+                }
+                if (deal.impact && !company.impact_metric) {
+                    updates.impact_metric = deal.impact;
+                }
+
+                // Only update if we have new information
+                if (Object.keys(updates).length > 0) {
+                    const { data: updatedCompany, error: updateError } = await supabase
+                        .from('companies')
+                        .update(updates)
+                        .eq('id', company.id)
+                        .select()
+                        .single();
+
+                    if (updateError) throw updateError;
+                    company = updatedCompany;
+                }
+            }
 
             // --- 2. Find or Create the Investors ---
             const investorIds = [];
             if (deal.leadInvestors && Array.isArray(deal.leadInvestors)) {
                 for (const investorName of deal.leadInvestors) {
                     if (!investorName) continue; // Skip if investor name is empty
-                    let [investor] = await db.select().from(investors).where(eq(investors.name, investorName.trim()));
-                    if (!investor) {
-                        [investor] = await db.insert(investors).values({ name: investorName.trim() }).returning();
+                    
+                    // Try to find existing investor
+                    let { data: investor, error: investorError } = await supabase
+                        .from('investors')
+                        .select()
+                        .eq('name', investorName.trim())
+                        .single();
+
+                    if (investorError && investorError.code === 'PGRST116') {
+                        // Create new investor if not found
+                        const { data: newInvestor, error: insertError } = await supabase
+                            .from('investors')
+                            .insert({ name: investorName.trim() })
+                            .select()
+                            .single();
+                            
+                        if (insertError) throw insertError;
+                        investor = newInvestor;
+                    } else if (investorError) {
+                        throw investorError;
                     }
+
                     investorIds.push(investor.id);
                 }
             }
@@ -57,61 +117,85 @@ export const processScrapedDataController = async (req: Request, res: Response) 
             // --- 3. Find or Create the Funding Round ---
             const announcedDateStr = deal.announcedAt; // e.g., "2025-06-16"
             
-            // Look for an existing round for this company and stage.
-            let [fundingRound] = await db.select().from(fundingRounds)
-                .where(and(
-                    eq(fundingRounds.companyId, company.id),
-                    eq(fundingRounds.stage, deal.fundingStage)
-                ));
+            // Look for an existing round for this company and stage
+            let { data: fundingRound, error: roundError } = await supabase
+                .from('funding_rounds')
+                .select()
+                .eq('company_id', company.id)
+                .eq('stage', deal.fundingStage)
+                .single();
 
-            if (!fundingRound) {
-                [fundingRound] = await db.insert(fundingRounds).values({
-                    companyId: company.id,
-                    stage: deal.fundingStage,
-                    amountUsd: parseAmount(deal.amountRaisedRaw),
-                    announcedAt: announcedDateStr,
-                    sourceUrl: deal.sourceUrl,
-                }).returning();
+            if (roundError && roundError.code === 'PGRST116') {
+                // Create new funding round if not found
+                const { data: newRound, error: insertError } = await supabase
+                    .from('funding_rounds')
+                    .insert({
+                        company_id: company.id,
+                        stage: deal.fundingStage,
+                        amount_usd: parseAmount(deal.amountRaisedRaw),
+                        announced_at: announcedDateStr,
+                        source_url: deal.sourceUrl,
+                    })
+                    .select()
+                    .single();
+                    
+                if (insertError) throw insertError;
+                fundingRound = newRound;
                 createdCount++;
+            } else if (roundError) {
+                throw roundError;
             } else {
                 // --- 3b. If Funding Round exists, check if it needs enrichment ---
-                const updates: Partial<typeof fundingRounds.$inferInsert> = {};
+                const updates: any = {};
                 const newAmount = parseAmount(deal.amountRaisedRaw);
 
-                if (!fundingRound.announcedAt && announcedDateStr) {
-                    updates.announcedAt = announcedDateStr;
+                if (!fundingRound.announced_at && announcedDateStr) {
+                    updates.announced_at = announcedDateStr;
                 }
-                if (!fundingRound.sourceUrl && deal.sourceUrl) {
-                    updates.sourceUrl = deal.sourceUrl;
+                if (!fundingRound.source_url && deal.sourceUrl) {
+                    updates.source_url = deal.sourceUrl;
                 }
-                if (!fundingRound.amountUsd && newAmount) {
-                    updates.amountUsd = newAmount;
+                if (!fundingRound.amount_usd && newAmount) {
+                    updates.amount_usd = newAmount;
                 }
 
                 // If there are updates to apply, perform the update
                 if (Object.keys(updates).length > 0) {
-                    [fundingRound] = await db.update(fundingRounds)
-                        .set(updates)
-                        .where(eq(fundingRounds.id, fundingRound.id))
-                        .returning();
-                } 
+                    const { data: updatedRound, error: updateError } = await supabase
+                        .from('funding_rounds')
+                        .update(updates)
+                        .eq('id', fundingRound.id)
+                        .select()
+                        .single();
+                        
+                    if (updateError) throw updateError;
+                    fundingRound = updatedRound;
+                }
             }
 
             // --- 4. Link Investors to the Funding Round via the "investments" table ---
             for (const investorId of investorIds) {
                 // Check if this specific investment link already exists
-                const [existingInvestment] = await db.select().from(investments)
-                    .where(and(
-                        eq(investments.fundingRoundId, fundingRound.id),
-                        eq(investments.investorId, investorId)
-                    ));
-                
-                if (!existingInvestment) {
-                    await db.insert(investments).values({
-                        fundingRoundId: fundingRound.id,
-                        investorId: investorId,
-                    });
+                const { data: existingInvestment, error: investmentError } = await supabase
+                    .from('investments')
+                    .select()
+                    .eq('funding_round_id', fundingRound.id)
+                    .eq('investor_id', investorId)
+                    .single();
+
+                if (investmentError && investmentError.code === 'PGRST116') {
+                    // Create new investment link if not found
+                    const { error: insertError } = await supabase
+                        .from('investments')
+                        .insert({
+                            funding_round_id: fundingRound.id,
+                            investor_id: investorId,
+                        });
+                        
+                    if (insertError) throw insertError;
                     investmentLinksCreated++;
+                } else if (investmentError && investmentError.code !== 'PGRST116') {
+                    throw investmentError;
                 }
             }
         } catch (error) {
