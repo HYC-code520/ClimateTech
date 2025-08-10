@@ -45,7 +45,7 @@ export function NavbarSidebarLayout({ children }: NavbarSidebarLayoutProps) {
             <button 
               className="text-[var(--botanical-green)] hover:text-[var(--botanical-light)] transition-colors font-medium"
             >
-              Funding Tracker
+              Funder Tracker
             </button>
             {/* <button 
               onClick={() => setLocation("/insights")}

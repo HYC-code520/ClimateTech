@@ -17,12 +17,6 @@ export function SidebarNavigation({ className = "" }: SidebarNavigationProps) {
 
   const navigationItems = [
     {
-      icon: TrendingUp,
-      label: "Funding Events",
-      path: "/funding-tracker",
-      active: location === "/funding-tracker"
-    },
-    {
       icon: Users,
       label: "Investors",
       path: "/investors",
@@ -39,6 +33,12 @@ export function SidebarNavigation({ className = "" }: SidebarNavigationProps) {
       label: "Map View",
       path: "/map",
       active: location === "/map"
+    },
+    {
+      icon: TrendingUp,
+      label: "Funder Tracker",
+      path: "/funding-tracker",
+      active: location === "/funding-tracker"
     }
   ];
 

@@ -34,11 +34,11 @@ export default function HomePage() {
           {/* Left Navigation - Hidden on mobile */}
           <nav className="hidden md:flex space-x-8">
             <button 
-              onClick={() => setLocation("/funding-tracker")}
+              onClick={() => setLocation("/investors")}
               className="text-[var(--botanical-green)] hover:text-[var(--botanical-light)] transition-colors font-medium"
               data-testid="nav-funding-tracker"
             >
-              Funding Tracker
+              Funder Tracker
             </button>
             <button 
               onClick={() => setLocation("/about")}
