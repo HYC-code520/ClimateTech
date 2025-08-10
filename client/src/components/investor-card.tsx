@@ -18,13 +18,15 @@ interface InvestorCardProps {
   isSelected?: boolean;
   onToggleSelection?: () => void;
   selectionMode?: boolean;
+  globalMaxInvestment?: number;
 }
 
 export function InvestorCard({ 
   investor, 
   isSelected = false, 
   onToggleSelection, 
-  selectionMode = false 
+  selectionMode = false,
+  globalMaxInvestment
 }: InvestorCardProps) {
   return (
     <div className={`bg-gray-900/50 border rounded-lg p-6 transition-all duration-200 ${
@@ -64,7 +66,11 @@ export function InvestorCard({
           <TrendingUp className="w-4 h-4 text-[var(--botanical-green)]" />
           <span className="text-sm font-medium text-gray-300">Investment Timeline</span>
         </div>
-        <InvestorTimeline data={investor.investments} investorName={investor.name} />
+        <InvestorTimeline 
+          data={investor.investments} 
+          investorName={investor.name}
+          maxAmount={globalMaxInvestment}
+        />
       </div>
 
       {/* Recent Investments */}

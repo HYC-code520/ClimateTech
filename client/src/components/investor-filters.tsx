@@ -1,7 +1,8 @@
-import { Search, Filter, TrendingUp, DollarSign } from "lucide-react";
+import { Search, Filter, TrendingUp, DollarSign, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState } from "react";
 
 interface InvestorFiltersProps {
@@ -126,7 +127,19 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-gray-700">
           {/* Investment Count Range */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Investment Count</label>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-300">Investment Count</label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-300 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-gray-800 border-gray-600 text-gray-200 max-w-xs">
+                    <p>Filter investors by the total number of deals they have made. This shows how active an investor is in the market.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <div className="flex gap-2">
               <Input
                 placeholder="Min"

@@ -1,6 +1,7 @@
 import { InvestorTimeline } from "./charts/investor-timeline";
 import { TrendingUp, DollarSign, Hash, ArrowLeft, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useMemo } from "react";
 
 interface InvestorComparisonProps {
   investors: Array<{
@@ -22,6 +23,19 @@ export function InvestorComparison({ investors, onClose }: InvestorComparisonPro
   if (investors.length !== 2) return null;
 
   const [investor1, investor2] = investors;
+
+  // Calculate global maximum for comparison charts
+  const globalMaxInvestment = useMemo(() => {
+    let maxAmount = 0;
+    investors.forEach(investor => {
+      investor.investments.forEach((investment: any) => {
+        if (investment.amount > maxAmount) {
+          maxAmount = investment.amount;
+        }
+      });
+    });
+    return maxAmount * 1.2; // Add 20% padding
+  }, [investors]);
 
   // Calculate comparison metrics
   const avgInvestment1 = investor1.totalInvested / investor1.investmentCount;
@@ -127,7 +141,11 @@ export function InvestorComparison({ investors, onClose }: InvestorComparisonPro
             <TrendingUp className="w-5 h-5 text-[var(--botanical-green)]" />
             <h4 className="text-lg font-semibold text-white">{investor1.name} Timeline</h4>
           </div>
-          <InvestorTimeline data={investor1.investments} investorName={investor1.name} />
+          <InvestorTimeline 
+            data={investor1.investments} 
+            investorName={investor1.name}
+            maxAmount={globalMaxInvestment}
+          />
         </div>
 
         {/* Investor 2 Timeline */}
@@ -136,7 +154,11 @@ export function InvestorComparison({ investors, onClose }: InvestorComparisonPro
             <TrendingUp className="w-5 h-5 text-blue-400" />
             <h4 className="text-lg font-semibold text-white">{investor2.name} Timeline</h4>
           </div>
-          <InvestorTimeline data={investor2.investments} investorName={investor2.name} />
+          <InvestorTimeline 
+            data={investor2.investments} 
+            investorName={investor2.name}
+            maxAmount={globalMaxInvestment}
+          />
         </div>
       </div>
 

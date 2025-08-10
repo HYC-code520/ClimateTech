@@ -12,6 +12,7 @@ interface InvestorTimelineProps {
   }[];
   investorName: string;
   colorBy?: 'stage' | 'sector';
+  maxAmount?: number;
 }
 
 // Custom dot component that uses our color scheme
@@ -38,7 +39,30 @@ const CustomDot = (props: any) => {
   );
 };
 
-export function InvestorTimeline({ data, investorName, colorBy = 'stage' }: InvestorTimelineProps) {
+export function InvestorTimeline({ data, investorName, colorBy = 'stage', maxAmount }: InvestorTimelineProps) {
+  // Convert date strings to timestamps for the chart
+  const chartData = React.useMemo(() => {
+    return data.map(item => ({
+      ...item,
+      timestamp: new Date(item.date).getTime(),
+      originalDate: item.date // Keep original for reference
+    }));
+  }, [data]);
+  
+  // Fixed start date: December 2024
+  const fixedStartDate = new Date('2024-12-01').getTime();
+  
+  // Calculate end date: either the latest investment + 6 months, or June 2025 (whichever is later)
+  const latestInvestmentDate = chartData.length > 0 
+    ? Math.max(...chartData.map(d => d.timestamp))
+    : fixedStartDate;
+  
+  const endDateFromData = new Date(latestInvestmentDate);
+  endDateFromData.setMonth(endDateFromData.getMonth() + 6); // Add 6 months buffer
+  
+  const minEndDate = new Date('2025-06-01').getTime();
+  const fixedEndDate = Math.max(endDateFromData.getTime(), minEndDate);
+
   return (
     <div className="w-full h-[250px]">
       <div className="flex items-center justify-between mb-2">
@@ -54,7 +78,7 @@ export function InvestorTimeline({ data, investorName, colorBy = 'stage' }: Inve
           </button>
           <button 
             onClick={() => {/* We'll implement this toggle */}}
-            className="text-xs px-2 py-1 bg-gray-700 rounded hover:bg-gray-600 transition-colors"
+            className="text-xs px-2 py-1 bg-gray-600 rounded hover:bg-gray-500 transition-colors"
           >
             Sector
           </button>
@@ -62,44 +86,41 @@ export function InvestorTimeline({ data, investorName, colorBy = 'stage' }: Inve
       </div>
       
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
-          <Line 
-            type="monotone" 
-            dataKey="amount" 
-            stroke="var(--botanical-green)" 
-            strokeWidth={2}
-            dot={<CustomDot colorBy={colorBy} />}
-            activeDot={{ r: 8, fill: "var(--botanical-green)" }}
-          />
+        <LineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
           <XAxis 
-            dataKey="date" 
-            stroke="#666"
-            fontSize={12}
-            tickFormatter={(date) => {
-              const d = new Date(date);
+            dataKey="timestamp" 
+            type="number"
+            scale="time"
+            domain={[fixedStartDate, fixedEndDate]}
+            axisLine={{ stroke: '#374151', strokeWidth: 1 }}
+            tickLine={{ stroke: '#374151', strokeWidth: 1 }}
+            tick={{ fontSize: 12, fill: '#9CA3AF' }}
+            tickFormatter={(timestamp) => {
+              const d = new Date(timestamp);
               return `${d.getMonth() + 1}/${d.getFullYear().toString().slice(-2)}`;
             }}
           />
           <YAxis 
-            stroke="#666"
-            fontSize={12}
-            tickFormatter={(value) => `$${value.toFixed(0)}M`}
+            axisLine={{ stroke: '#374151', strokeWidth: 1 }}
+            tickLine={{ stroke: '#374151', strokeWidth: 1 }}
+            tick={{ fontSize: 12, fill: '#9CA3AF' }}
+            tickFormatter={(value) => `$${value}M`}
+            domain={maxAmount ? [0, maxAmount] : [0, 'dataMax']}
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: "#1f2937",
+              backgroundColor: "#1F2937",
               border: "1px solid #374151",
               borderRadius: "8px",
-              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+              boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
             }}
-            labelStyle={{ color: "#9ca3af", fontSize: "12px" }}
             itemStyle={{ color: "#fff", fontSize: "14px" }}
             formatter={(value: number, name, props) => [
               `$${value.toFixed(1)}M`,
               "Investment Amount"
             ]}
-            labelFormatter={(date) => {
-              const d = new Date(date);
+            labelFormatter={(timestamp) => {
+              const d = new Date(timestamp);
               return d.toLocaleDateString('en-US', { 
                 month: 'short', 
                 day: 'numeric', 
@@ -112,7 +133,7 @@ export function InvestorTimeline({ data, investorName, colorBy = 'stage' }: Inve
                 return (
                   <div className="bg-gray-900 border border-gray-600 rounded-lg p-3 shadow-lg">
                     <p className="text-gray-300 text-sm mb-2">
-                      {new Date(label).toLocaleDateString('en-US', { 
+                      {new Date(data.timestamp).toLocaleDateString('en-US', { 
                         month: 'short', 
                         day: 'numeric', 
                         year: 'numeric' 
@@ -122,27 +143,14 @@ export function InvestorTimeline({ data, investorName, colorBy = 'stage' }: Inve
                       ${payload[0].value?.toFixed(1)}M
                     </p>
                     {data.companyName && (
-                      <p className="text-gray-300 text-sm">
+                      <p className="text-gray-400 text-sm">
                         {data.companyName}
                       </p>
                     )}
                     {data.stage && (
-                      <div className="flex items-center gap-2 mt-1">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: getStageColor(data.stage) }}
-                        />
-                        <span className="text-gray-400 text-sm">{data.stage}</span>
-                      </div>
-                    )}
-                    {data.sector && (
-                      <div className="flex items-center gap-2 mt-1">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: getSectorColor(data.sector) }}
-                        />
-                        <span className="text-gray-400 text-sm">{data.sector}</span>
-                      </div>
+                      <p className="text-gray-400 text-sm">
+                        {data.stage}
+                      </p>
                     )}
                   </div>
                 );
@@ -150,8 +158,21 @@ export function InvestorTimeline({ data, investorName, colorBy = 'stage' }: Inve
               return null;
             }}
           />
+          <Line
+            type="monotone"
+            dataKey="amount"
+            stroke="var(--botanical-green)"
+            strokeWidth={3}
+            dot={<CustomDot colorBy={colorBy} />}
+            activeDot={{ 
+              r: 8, 
+              fill: "var(--botanical-green)",
+              stroke: "var(--botanical-green)",
+              strokeWidth: 2
+            }}
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>
-  )
+  );
 } 

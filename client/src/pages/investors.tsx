@@ -95,6 +95,27 @@ export default function InvestorsPage() {
       );
     }
 
+    // Filter by check size based on average investment amount
+    if (filters.checkSize) {
+      filtered = filtered.filter(investor => {
+        const averageInvestment = investor.totalInvested / investor.investmentCount;
+        const averageInvestmentM = averageInvestment / 1000000; // Convert to millions
+        
+        switch (filters.checkSize) {
+          case "small":
+            return averageInvestmentM >= 1 && averageInvestmentM <= 5;
+          case "medium":
+            return averageInvestmentM > 5 && averageInvestmentM <= 20;
+          case "large":
+            return averageInvestmentM > 20 && averageInvestmentM <= 100;
+          case "mega":
+            return averageInvestmentM > 100;
+          default:
+            return true;
+        }
+      });
+    }
+
     // Sort investors
     filtered.sort((a, b) => {
       switch (filters.sortBy) {
@@ -116,6 +137,23 @@ export default function InvestorsPage() {
 
     return filtered;
   }, [investors, filters]);
+
+  // Calculate global maximum investment amount for normalized Y-axis
+  const globalMaxInvestment = useMemo(() => {
+    if (filteredInvestors.length === 0) return 0;
+    
+    let maxAmount = 0;
+    filteredInvestors.forEach(investor => {
+      investor.investments.forEach((investment: any) => {
+        if (investment.amount > maxAmount) {
+          maxAmount = investment.amount;
+        }
+      });
+    });
+    
+    // Add some padding (20%) to the maximum for better visualization
+    return maxAmount * 1.2;
+  }, [filteredInvestors]);
 
   // Get selected investors for comparison
   const selectedInvestorsData = filteredInvestors.filter(inv => selectedInvestors.includes(inv.id));
@@ -207,6 +245,7 @@ export default function InvestorsPage() {
                 isSelected={selectedInvestors.includes(investor.id)}
                 onToggleSelection={() => toggleInvestorSelection(investor.id)}
                 selectionMode={selectedInvestors.length > 0}
+                globalMaxInvestment={globalMaxInvestment}
               />
             ))}
           </div>
