@@ -1,7 +1,8 @@
 import { NavbarSidebarLayout } from "@/components/ui/navbar-sidebar-layout";
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
+import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from "react-simple-maps";
+import { ZoomIn, ZoomOut, RotateCcw, ExternalLink, Calendar, DollarSign, Building2, MapPin } from "lucide-react";
 
 // Type definition for funding events
 type FundingEvent = {
@@ -19,81 +20,17 @@ type FundingEvent = {
   Tags: string;
 };
 
-// Updated country coordinates for positioning markers on the map
-const countryPositions: Record<string, { x: number; y: number }> = {
-  // North America
-  "USA": { x: 200, y: 180 },
-  "United States": { x: 200, y: 180 },
-  "Canada": { x: 180, y: 120 },
-  "Mexico": { x: 170, y: 220 },
-  
-  // South America
-  "Brazil": { x: 260, y: 320 },
-  "Argentina": { x: 250, y: 400 },
-  "Chile": { x: 240, y: 380 },
-  "Colombia": { x: 230, y: 280 },
-  "Peru": { x: 230, y: 320 },
-  "Venezuela": { x: 240, y: 260 },
-  
-  // Europe
-  "UK": { x: 420, y: 140 },
-  "United Kingdom": { x: 420, y: 140 },
-  "England": { x: 420, y: 140 },
-  "Germany": { x: 460, y: 140 },
-  "France": { x: 440, y: 160 },
-  "Spain": { x: 420, y: 180 },
-  "Italy": { x: 460, y: 180 },
-  "Netherlands": { x: 450, y: 130 },
-  "Sweden": { x: 470, y: 100 },
-  "Norway": { x: 460, y: 90 },
-  "Finland": { x: 490, y: 100 },
-  "Poland": { x: 480, y: 140 },
-  "Switzerland": { x: 450, y: 160 },
-  
-  // Asia
-  "Russia": { x: 580, y: 120 },
-  "China": { x: 620, y: 200 },
-  "Japan": { x: 680, y: 180 },
-  "South Korea": { x: 660, y: 180 },
-  "India": { x: 580, y: 240 },
-  "Indonesia": { x: 620, y: 280 },
-  "Thailand": { x: 600, y: 260 },
-  "Vietnam": { x: 610, y: 240 },
-  "Philippines": { x: 640, y: 260 },
-  "Singapore": { x: 610, y: 280 },
-  "Malaysia": { x: 600, y: 270 },
-  
-  // Africa
-  "South Africa": { x: 480, y: 380 },
-  "Nigeria": { x: 440, y: 280 },
-  "Kenya": { x: 500, y: 300 },
-  "Egypt": { x: 480, y: 220 },
-  "Morocco": { x: 420, y: 220 },
-  "Ghana": { x: 430, y: 280 },
-  "Ethiopia": { x: 510, y: 280 },
-  
-  // Middle East
-  "Israel": { x: 490, y: 220 },
-  "UAE": { x: 520, y: 240 },
-  "Saudi Arabia": { x: 500, y: 240 },
-  "Turkey": { x: 490, y: 180 },
-  
-  // Oceania
-  "Australia": { x: 660, y: 380 },
-  "New Zealand": { x: 710, y: 420 },
-};
-
 // countryCentroids: { [country]: [lon, lat] }
 const countryCentroids: Record<string, [number, number]> = {
   "USA": [-95.7129, 37.0902],
   "United States": [-95.7129, 37.0902],
-  "Canada": [-95.7129, 37.0902],
+  "Canada": [-106.3468, 56.1304],
   "Mexico": [-102.5000, 23.6333],
   "Brazil": [-51.9253, -14.2350],
   "Argentina": [-64.1811, -31.4135],
   "Chile": [-70.6693, -33.4489],
   "Colombia": [-74.0721, 4.7110],
-  "Peru": [-74.0721, 4.7110],
+  "Peru": [-75.0152, -9.1900],
   "Venezuela": [-66.5852, 10.4687],
   "UK": [-0.1276, 51.5074],
   "United Kingdom": [-0.1276, 51.5074],
@@ -134,7 +71,6 @@ const countryCentroids: Record<string, [number, number]> = {
   "New Zealand": [174.7633, -41.2900],
 };
 
-
 // Fetch funding events
 const fetchFundingEvents = async (): Promise<FundingEvent[]> => {
   const response = await fetch('/api/events/search');
@@ -148,6 +84,8 @@ export default function MapPage() {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const [showAllTop, setShowAllTop] = useState(false);
+  const [position, setPosition] = useState({ coordinates: [0, 0], zoom: 1 });
+  const [showDetailedEvents, setShowDetailedEvents] = useState(false);
 
   // Fetch funding events data
   const { data: fundingEvents = [], isLoading, isError } = useQuery<FundingEvent[]>({
@@ -163,6 +101,9 @@ export default function MapPage() {
       avgFunding: number;
       sectors: Record<string, number>;
       companies: string[];
+      events: FundingEvent[];
+      recentEvents: FundingEvent[];
+      topSectors: Array<{ sector: string; count: number; funding: number }>;
     }> = {};
 
     fundingEvents.forEach(event => {
@@ -175,24 +116,52 @@ export default function MapPage() {
           totalFunding: 0,
           avgFunding: 0,
           sectors: {},
-          companies: []
+          companies: [],
+          events: [],
+          recentEvents: [],
+          topSectors: []
         };
       }
 
       aggregated[country].count += 1;
-      aggregated[country].totalFunding += event.AmountRaisedUSD || 0;
+      // Handle null/undefined amounts properly
+      const amount = event.AmountRaisedUSD || 0;
+      aggregated[country].totalFunding += amount;
       aggregated[country].companies.push(event.CompanyName);
+      aggregated[country].events.push(event);
       
       if (event.ClimateTechSector) {
-        aggregated[country].sectors[event.ClimateTechSector] = 
-          (aggregated[country].sectors[event.ClimateTechSector] || 0) + 1;
+        if (!aggregated[country].sectors[event.ClimateTechSector]) {
+          aggregated[country].sectors[event.ClimateTechSector] = 0;
+        }
+        aggregated[country].sectors[event.ClimateTechSector] += 1;
       }
     });
 
-    // Calculate averages
+    // Calculate derived data
     Object.keys(aggregated).forEach(country => {
-      aggregated[country].avgFunding = 
-        aggregated[country].totalFunding / aggregated[country].count;
+      const data = aggregated[country];
+      data.avgFunding = data.count > 0 ? data.totalFunding / data.count : 0;
+      
+      // Sort events by date and amount for recent events
+      data.recentEvents = data.events
+        .sort((a, b) => {
+          const dateA = new Date(b.FundingDate || '1970-01-01').getTime();
+          const dateB = new Date(a.FundingDate || '1970-01-01').getTime();
+          return dateA - dateB;
+        })
+        .slice(0, 5);
+      
+      // Calculate top sectors with funding
+      data.topSectors = Object.entries(data.sectors)
+        .map(([sector, count]) => {
+          const sectorFunding = data.events
+            .filter(e => e.ClimateTechSector === sector)
+            .reduce((sum, e) => sum + (e.AmountRaisedUSD || 0), 0);
+          return { sector, count, funding: sectorFunding };
+        })
+        .sort((a, b) => b.funding - a.funding)
+        .slice(0, 3);
     });
 
     return aggregated;
@@ -203,22 +172,74 @@ export default function MapPage() {
     const data = countryData[country];
     if (!data) return { size: 0, color: '#1f2937', opacity: 0 };
 
-    const size = Math.min(Math.max(data.count * 3, 8), 30);
+    const baseSize = Math.min(Math.max(data.count * 2, 6), 25);
     const intensity = Math.min(data.totalFunding / 50000000, 1);
     
     return {
-      size,
+      size: baseSize,
       color: `#10b981`,
-      opacity: 0.8 + intensity * 0.2,
+      opacity: 0.7 + intensity * 0.3,
       glow: intensity > 0.5
     };
   };
 
-  // All countries sorted by funding (we'll slice in render)
+  // All countries sorted by funding
   const sortedCountries = useMemo(() => {
     return Object.entries(countryData)
       .sort(([, a], [, b]) => b.totalFunding - a.totalFunding);
   }, [countryData]);
+
+  // Handle zoom controls
+  const handleZoomIn = () => {
+    setPosition(prev => ({
+      ...prev,
+      zoom: Math.min(prev.zoom * 1.5, 8)
+    }));
+  };
+
+  const handleZoomOut = () => {
+    setPosition(prev => ({
+      ...prev,
+      zoom: Math.max(prev.zoom / 1.5, 1)
+    }));
+  };
+
+  const handleReset = () => {
+    setPosition({ coordinates: [0, 0], zoom: 1 });
+  };
+
+  // Handle move end for zoom
+  function handleMoveEnd(position: any) {
+    setPosition(position);
+  }
+
+  // Get events for selected country
+  const selectedCountryEvents = selectedCountry ? countryData[selectedCountry]?.events || [] : [];
+  const selectedCountryData = selectedCountry ? countryData[selectedCountry] : null;
+
+  // Format currency - handle null/undefined values
+  const formatCurrency = (amount: number | null | undefined) => {
+    if (!amount || amount === null || amount === undefined || isNaN(amount)) {
+      return '$0';
+    }
+    if (amount >= 1000000000) return `$${(amount / 1000000000).toFixed(1)}B`;
+    if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
+    if (amount >= 1000) return `$${(amount / 1000).toFixed(0)}K`;
+    return `$${amount.toFixed(0)}`;
+  };
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch {
+      return dateString;
+    }
+  };
 
   if (isLoading) {
     return (
@@ -237,7 +258,7 @@ export default function MapPage() {
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-white mb-2">Global Climate Tech Map</h1>
           <p className="text-gray-400">
-            Interactive visualization of climate tech funding activity worldwide • {fundingEvents.length} events
+            Interactive visualization of climate tech funding activity worldwide • {fundingEvents.length} events • Use mouse wheel to zoom and drag to pan
           </p>
         </div>
 
@@ -258,7 +279,7 @@ export default function MapPage() {
                 <div>
                   <p className="text-gray-400 text-sm">Total Funding</p>
                   <p className="text-2xl font-bold text-[var(--botanical-green)]">
-                    ${(fundingEvents.reduce((sum, event) => sum + (event.AmountRaisedUSD || 0), 0) / 1000000000).toFixed(1)}B
+                    {formatCurrency(fundingEvents.reduce((sum, event) => sum + (event.AmountRaisedUSD || 0), 0))}
                   </p>
                 </div>
 
@@ -268,6 +289,55 @@ export default function MapPage() {
                     {Object.keys(countryData).length}
                   </p>
                 </div>
+
+                <div>
+                  <p className="text-gray-400 text-sm">Zoom Level</p>
+                  <p className="text-lg font-semibold text-[var(--botanical-green)]">
+                    {position.zoom.toFixed(1)}x
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Zoom Controls */}
+            <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
+              <h4 className="text-lg font-semibold text-white mb-4">Map Controls</h4>
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleZoomIn}
+                  className="flex-1 bg-[var(--botanical-green)] hover:bg-[var(--botanical-dark)] text-white p-2 rounded flex items-center justify-center transition-colors"
+                  title="Zoom In"
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleZoomOut}
+                  className="flex-1 bg-[var(--botanical-green)] hover:bg-[var(--botanical-dark)] text-white p-2 rounded flex items-center justify-center transition-colors"
+                  title="Zoom Out"
+                >
+                  <ZoomOut className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleReset}
+                  className="flex-1 bg-gray-600 hover:bg-gray-500 text-white p-2 rounded flex items-center justify-center transition-colors"
+                  title="Reset View"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="mt-3">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={showDetailedEvents}
+                    onChange={(e) => setShowDetailedEvents(e.target.checked)}
+                    className="rounded"
+                  />
+                  <span>Show detailed events on hover</span>
+                </label>
+              </div>
+              <div className="mt-2 text-xs text-gray-400">
+                💡 Use mouse wheel to zoom, drag to pan
               </div>
             </div>
 
@@ -275,10 +345,10 @@ export default function MapPage() {
             <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
               <h4 className="text-lg font-semibold text-white mb-4">Top Countries</h4>
               <div className={`space-y-3 ${showAllTop ? 'max-h-64 overflow-y-auto pr-1' : ''}`}>
-                {(showAllTop ? sortedCountries : sortedCountries.slice(0, 3)).map(([country, data]) => (
+                {(showAllTop ? sortedCountries : sortedCountries.slice(0, 5)).map(([country, data]) => (
                   <div 
                     key={country}
-                    className="flex justify-between items-center p-2 hover:bg-gray-800/50 rounded cursor-pointer"
+                    className="flex justify-between items-center p-2 hover:bg-gray-800/50 rounded cursor-pointer transition-colors"
                     onClick={() => setSelectedCountry(country)}
                   >
                     <div className="flex items-center gap-3">
@@ -290,7 +360,7 @@ export default function MapPage() {
                     </div>
                     <div className="text-right">
                       <div className="text-[var(--botanical-green)] text-sm font-semibold">
-                        ${(data.totalFunding / 1000000).toFixed(0)}M
+                        {formatCurrency(data.totalFunding)}
                       </div>
                       <div className="text-gray-400 text-xs">
                         {data.count} events
@@ -300,72 +370,236 @@ export default function MapPage() {
                 ))}
               </div>
               <button
-                className="mt-3 text-xs text-gray-300 hover:text-white underline"
+                className="mt-3 text-xs text-gray-300 hover:text-white underline transition-colors"
                 onClick={() => setShowAllTop(v => !v)}
               >
                 {showAllTop ? 'Show less' : 'Show all'}
               </button>
             </div>
+
+            {/* Selected Country Details */}
+            {selectedCountry && selectedCountryData && (
+              <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
+                <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-[var(--botanical-green)]" />
+                  {selectedCountry}
+                </h4>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-gray-400 text-sm">Total Events</p>
+                      <p className="text-xl font-bold text-[var(--botanical-green)]">
+                        {selectedCountryData.count}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm">Total Funding</p>
+                      <p className="text-xl font-bold text-[var(--botanical-green)]">
+                        {formatCurrency(selectedCountryData.totalFunding)}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <p className="text-gray-400 text-sm mb-2">Average per Event</p>
+                    <p className="text-lg font-semibold text-white">
+                      {formatCurrency(selectedCountryData.avgFunding)}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-gray-400 text-sm mb-2">Top Sectors</p>
+                    <div className="space-y-1">
+                      {selectedCountryData.topSectors.slice(0, 3).map(({ sector, count, funding }) => (
+                        <div key={sector} className="flex justify-between items-center text-xs">
+                          <span className="text-[var(--botanical-green)]">{sector}</span>
+                          <span className="text-gray-400">{count} • {formatCurrency(funding)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Map */}
           <div className="lg:col-span-3">
-            <div className="bg-gray-900/30 border border-gray-700 rounded-lg p-4 h-[440px] relative overflow-hidden">
-              <ComposableMap projection="geoMercator" width={800} height={380} style={{ background: "transparent" }}>
-                <Geographies geography="https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json">
-                  {({ geographies }) =>
-                    geographies.map((geo) => (
-                      <Geography key={geo.rsmKey} geography={geo} fill="#111827" stroke="#374151" />
-                    ))
-                  }
-                </Geographies>
+            <div className="bg-gray-900/30 border border-gray-700 rounded-lg p-4 h-[500px] relative overflow-hidden">
+              <ComposableMap 
+                projection="geoMercator" 
+                width={800} 
+                height={450} 
+                style={{ background: "transparent" }}
+              >
+                <ZoomableGroup
+                  zoom={position.zoom}
+                  center={position.coordinates as [number, number]}
+                  onMoveEnd={handleMoveEnd}
+                  maxZoom={8}
+                  minZoom={1}
+                >
+                  <Geographies geography="https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json">
+                    {({ geographies }) =>
+                      geographies.map((geo) => (
+                        <Geography 
+                          key={geo.rsmKey} 
+                          geography={geo} 
+                          fill="#111827" 
+                          stroke="#374151"
+                          strokeWidth={0.5}
+                          style={{
+                            default: { outline: "none" },
+                            hover: { fill: "#1f2937", outline: "none" },
+                            pressed: { outline: "none" }
+                          }}
+                        />
+                      ))
+                    }
+                  </Geographies>
 
-                {/* Country markers */}
-                {Object.entries(countryCentroids).map(([country, coords]) => {
-                  const m = getMarkerProps(country);
-                  if (!m.size) return null;
-                  return (
-                    <Marker
-                      key={country}
-                      coordinates={coords as [number, number]}
-                      onMouseEnter={() => setHoveredCountry(country)}
-                      onMouseLeave={() => setHoveredCountry(null)}
-                      onClick={() => setSelectedCountry(country)}
-                    >
-                      {m.glow && <circle r={m.size + 10} fill={m.color} opacity={0.3} />}
-                      {/* hover ring */}
-                      {hoveredCountry === country && (
-                        <circle r={m.size + 6} fill="none" stroke="#10b981" strokeWidth={2} strokeOpacity={0.6} />
-                      )}
-                      <circle r={m.size} fill={m.color} opacity={m.opacity} className="cursor-pointer" />
-                      <title>{country}</title>
-                    </Marker>
-                  );
-                })}
+                  {/* Country markers */}
+                  {Object.entries(countryCentroids).map(([country, coords]) => {
+                    const m = getMarkerProps(country);
+                    if (!m.size) return null;
+                    return (
+                      <Marker
+                        key={country}
+                        coordinates={coords}
+                        onMouseEnter={() => setHoveredCountry(country)}
+                        onMouseLeave={() => setHoveredCountry(null)}
+                        onClick={() => setSelectedCountry(country)}
+                      >
+                        {m.glow && <circle r={m.size + 8} fill={m.color} opacity={0.2} />}
+                        {hoveredCountry === country && (
+                          <circle r={m.size + 4} fill="none" stroke="#10b981" strokeWidth={2} strokeOpacity={0.8} />
+                        )}
+                        <circle 
+                          r={m.size} 
+                          fill={m.color} 
+                          opacity={m.opacity} 
+                          className="cursor-pointer transition-all duration-200 hover:opacity-100" 
+                        />
+                        <title>{country}</title>
+                      </Marker>
+                    );
+                  })}
+                </ZoomableGroup>
               </ComposableMap>
 
-              {/* Tooltip */}
+              {/* Enhanced Tooltip */}
               {hoveredCountry && countryData[hoveredCountry] && (
-                <div className="absolute top-4 right-4 bg-gray-900 border border-gray-600 rounded-lg p-4 shadow-lg">
-                  <h4 className="text-white font-semibold mb-2">{hoveredCountry}</h4>
-                  <div className="space-y-1 text-sm">
-                    <div className="text-gray-300">
-                      Events: <span className="text-[var(--botanical-green)]">{countryData[hoveredCountry].count}</span>
-                    </div>
-                    <div className="text-gray-300">
-                      Total Funding: <span className="text-[var(--botanical-green)]">
-                        ${(countryData[hoveredCountry].totalFunding / 1000000).toFixed(1)}M
+                <div className="absolute top-4 right-4 bg-gray-900/95 border border-gray-600 rounded-lg p-4 shadow-xl max-w-sm backdrop-blur-sm">
+                  <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-[var(--botanical-green)]" />
+                    {hoveredCountry}
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Events:</span>
+                      <span className="text-[var(--botanical-green)] font-semibold">
+                        {countryData[hoveredCountry].count}
                       </span>
                     </div>
-                    <div className="text-gray-300">
-                      Avg per Event: <span className="text-[var(--botanical-green)]">
-                        ${(countryData[hoveredCountry].avgFunding / 1000000).toFixed(1)}M
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Total Funding:</span>
+                      <span className="text-[var(--botanical-green)] font-semibold">
+                        {formatCurrency(countryData[hoveredCountry].totalFunding)}
                       </span>
                     </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Avg per Event:</span>
+                      <span className="text-[var(--botanical-green)] font-semibold">
+                        {formatCurrency(countryData[hoveredCountry].avgFunding)}
+                      </span>
+                    </div>
+                    
+                    {showDetailedEvents && countryData[hoveredCountry].recentEvents.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-gray-600">
+                        <p className="text-gray-300 text-xs mb-2 flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          Recent Events:
+                        </p>
+                        <div className="space-y-2 max-h-32 overflow-y-auto">
+                          {countryData[hoveredCountry].recentEvents.slice(0, 3).map((event, index) => (
+                            <div key={index} className="text-xs bg-gray-800/70 p-2 rounded">
+                              <div className="font-medium text-[var(--botanical-green)] flex items-center gap-1">
+                                <Building2 className="w-3 h-3" />
+                                {event.CompanyName}
+                              </div>
+                              <div className="text-gray-300 flex items-center gap-1 mt-1">
+                                <DollarSign className="w-3 h-3" />
+                                {formatCurrency(event.AmountRaisedUSD)} • {event.FundingStage}
+                              </div>
+                              <div className="text-gray-400">{event.ClimateTechSector}</div>
+                              <div className="text-gray-500">{formatDate(event.FundingDate)}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
             </div>
+
+            {/* Selected Country Events List */}
+            {selectedCountry && selectedCountryEvents.length > 0 && (
+              <div className="mt-4 bg-gray-900/30 border border-gray-700 rounded-lg p-4">
+                <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-[var(--botanical-green)]" />
+                  Funding Events in {selectedCountry}
+                  <span className="text-sm text-gray-400">({selectedCountryEvents.length} total)</span>
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-80 overflow-y-auto">
+                  {selectedCountryEvents
+                    .sort((a, b) => (b.AmountRaisedUSD || 0) - (a.AmountRaisedUSD || 0))
+                    .map((event, index) => (
+                    <div key={index} className="bg-gray-800/50 border border-gray-600 rounded-lg p-4 hover:bg-gray-800/70 transition-colors">
+                      <div className="font-medium text-[var(--botanical-green)] text-sm mb-2 flex items-start justify-between">
+                        <span className="flex-1">{event.CompanyName}</span>
+                        {event.SourceURL && (
+                          <a 
+                            href={event.SourceURL} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-gray-400 hover:text-[var(--botanical-green)] ml-2"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
+                      
+                      <div className="text-white text-lg font-bold mb-1">
+                        {formatCurrency(event.AmountRaisedUSD)}
+                      </div>
+                      
+                      <div className="text-gray-400 text-xs mb-2 flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {event.FundingStage} • {formatDate(event.FundingDate)}
+                      </div>
+                      
+                      <div className="text-gray-500 text-xs mb-2">
+                        {event.ClimateTechSector}
+                      </div>
+                      
+                      {event.LeadInvestors && (
+                        <div className="text-gray-400 text-xs mb-2">
+                          <strong>Lead:</strong> {event.LeadInvestors}
+                        </div>
+                      )}
+                      
+                      {event.Problem && (
+                        <div className="text-gray-500 text-xs">
+                          <strong>Problem:</strong> {event.Problem.slice(0, 80)}
+                          {event.Problem.length > 80 && '...'}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
