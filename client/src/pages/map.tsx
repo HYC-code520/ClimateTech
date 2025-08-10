@@ -299,53 +299,11 @@ export default function MapPage() {
               </div>
             </div>
 
-            {/* Zoom Controls */}
-            <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
-              <h4 className="text-lg font-semibold text-white mb-4">Map Controls</h4>
-              <div className="flex space-x-2">
-                <button
-                  onClick={handleZoomIn}
-                  className="flex-1 bg-[var(--botanical-green)] hover:bg-[var(--botanical-dark)] text-white p-2 rounded flex items-center justify-center transition-colors"
-                  title="Zoom In"
-                >
-                  <ZoomIn className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={handleZoomOut}
-                  className="flex-1 bg-[var(--botanical-green)] hover:bg-[var(--botanical-dark)] text-white p-2 rounded flex items-center justify-center transition-colors"
-                  title="Zoom Out"
-                >
-                  <ZoomOut className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={handleReset}
-                  className="flex-1 bg-gray-600 hover:bg-gray-500 text-white p-2 rounded flex items-center justify-center transition-colors"
-                  title="Reset View"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="mt-3">
-                <label className="flex items-center space-x-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={showDetailedEvents}
-                    onChange={(e) => setShowDetailedEvents(e.target.checked)}
-                    className="rounded"
-                  />
-                  <span>Show detailed events on hover</span>
-                </label>
-              </div>
-              <div className="mt-2 text-xs text-gray-400">
-                💡 Use mouse wheel to zoom, drag to pan
-              </div>
-            </div>
-
             {/* Top Countries */}
             <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
-              <h4 className="text-lg font-semibold text-white mb-4">Top Countries</h4>
-              <div className={`space-y-3 ${showAllTop ? 'max-h-64 overflow-y-auto pr-1' : ''}`}>
-                {(showAllTop ? sortedCountries : sortedCountries.slice(0, 5)).map(([country, data]) => (
+              <h4 className="text-lg font-semibold text-white mb-3">Top Countries</h4>
+              <div className={`space-y-2 ${showAllTop ? 'max-h-48 overflow-y-auto pr-2' : 'max-h-32 overflow-hidden'}`}>
+                {(showAllTop ? sortedCountries : sortedCountries.slice(0, 3)).map(([country, data]) => (
                   <div 
                     key={country}
                     className="flex justify-between items-center p-2 hover:bg-gray-800/50 rounded cursor-pointer transition-colors"
@@ -370,7 +328,7 @@ export default function MapPage() {
                 ))}
               </div>
               <button
-                className="mt-3 text-xs text-gray-300 hover:text-white underline transition-colors"
+                className="mt-2 text-xs text-gray-300 hover:text-white underline transition-colors"
                 onClick={() => setShowAllTop(v => !v)}
               >
                 {showAllTop ? 'Show less' : 'Show all'}
