@@ -8,9 +8,11 @@ function parseAmount(amountStr: string): number | null {
     const cleaned = amountStr.replace(/[^0-9.]/g, '');
     const value = parseFloat(cleaned);
     if (isNaN(value)) return null;
-    if (amountStr.toLowerCase().includes('m')) return value * 1_000_000;
-    if (amountStr.toLowerCase().includes('k')) return value * 1_000;
-    return value;
+    const lowerStr = amountStr.toLowerCase();
+    if (lowerStr.includes('b')) return Math.round(value * 1_000_000_000);
+    if (lowerStr.includes('m')) return Math.round(value * 1_000_000);
+    if (lowerStr.includes('k')) return Math.round(value * 1_000);
+    return Math.round(value);
 }
 
 export const processScrapedDataController = async (req: Request, res: Response) => {
