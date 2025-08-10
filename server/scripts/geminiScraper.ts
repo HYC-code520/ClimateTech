@@ -106,10 +106,16 @@ export async function scrapeAndParse(targetUrl: string) {
     relevantElements.each((index: any, element: any) => {
       const el = $(element);
       if (el.is('h3')) {
-        currentStage = el.text().trim();
-        if (currentStage.includes("Exits") || currentStage.includes("New Funds")) {
+        const headerText = el.text().trim();
+        // Check if we've hit the "Other" section
+        if (headerText === 'Other' || headerText === '<strong>Other</strong>' || el.find('strong').text() === 'Other') {
           return false; // stop processing
         }
+        // Check other stopping conditions
+        if (headerText.includes("Exits") || headerText.includes("New Funds")) {
+          return false;
+        }
+        currentStage = headerText;
       } else if (el.is('p')) {
         dealsToProcess.push({ rawText: el.text().trim(), stage: currentStage });
       }
@@ -146,7 +152,7 @@ export async function scrapeAndParse(targetUrl: string) {
         { deals: allDeals },
         { 
           headers: { 'x-api-key': process.env.INTERNAL_PIPELINE_KEY },
-          timeout: 10000 // 10 second timeout
+          timeout: 30000 // 30 second timeout
         }
       );
       console.log('API Response:', response.data);
@@ -161,5 +167,5 @@ export async function scrapeAndParse(targetUrl: string) {
 }
 
 // --- Execution ---
-const urlToScrape = 'https://www.ctvc.co/uk-ets-opens-floor-to-carbon-removal-256/';
+const urlToScrape = 'https://www.ctvc.co/ctvc-wrapped-2024-227-2/';
 scrapeAndParse(urlToScrape);
