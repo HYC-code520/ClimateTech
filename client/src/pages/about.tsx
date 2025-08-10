@@ -45,12 +45,6 @@ export default function AboutPage() {
               Funding Tracker
             </button>
             <button 
-              onClick={() => setLocation("/insights")}
-              className="text-white hover:text-[var(--botanical-green)] transition-colors font-medium"
-            >
-              Insights
-            </button>
-            <button 
               className="text-[var(--botanical-green)] hover:text-[var(--botanical-light)] transition-colors font-medium"
             >
               About

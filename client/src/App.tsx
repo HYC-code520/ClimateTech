@@ -32,7 +32,6 @@ function Router() {
       <Route path="/source-data" component={SourceDataPage} />
       <Route path="/settings" component={SettingsPage} />
       <Route path="/help" component={HelpPage} />
-      <Route path="/insights" component={InsightsPage} />
       <Route path="/about" component={AboutPage} />
       <Route path="/login" component={AuthPage} />
       <Route path="/signup" component={AuthPage} />

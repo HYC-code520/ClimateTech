@@ -47,12 +47,12 @@ export function NavbarSidebarLayout({ children }: NavbarSidebarLayoutProps) {
             >
               Funding Tracker
             </button>
-            <button 
+            {/* <button 
               onClick={() => setLocation("/insights")}
               className="text-white hover:text-[var(--botanical-green)] transition-colors font-medium"
             >
               Insights
-            </button>
+            </button> */}
             <button 
               onClick={() => setLocation("/about")}
               className="text-white hover:text-[var(--botanical-green)] transition-colors font-medium"
