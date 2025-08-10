@@ -325,9 +325,20 @@ export default function MapPage() {
                   const m = getMarkerProps(country);
                   if (!m.size) return null;
                   return (
-                    <Marker key={country} coordinates={coords as [number, number]}>
+                    <Marker
+                      key={country}
+                      coordinates={coords as [number, number]}
+                      onMouseEnter={() => setHoveredCountry(country)}
+                      onMouseLeave={() => setHoveredCountry(null)}
+                      onClick={() => setSelectedCountry(country)}
+                    >
                       {m.glow && <circle r={m.size + 10} fill={m.color} opacity={0.3} />}
-                      <circle r={m.size} fill={m.color} opacity={m.opacity} />
+                      {/* hover ring */}
+                      {hoveredCountry === country && (
+                        <circle r={m.size + 6} fill="none" stroke="#10b981" strokeWidth={2} strokeOpacity={0.6} />
+                      )}
+                      <circle r={m.size} fill={m.color} opacity={m.opacity} className="cursor-pointer" />
+                      <title>{country}</title>
                     </Marker>
                   );
                 })}
