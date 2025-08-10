@@ -15,6 +15,22 @@ interface InvestorTimelineProps {
   maxAmount?: number;
 }
 
+// Helper function to format amounts that are already in millions
+const formatAmountInMillions = (value: number): string => {
+  if (value >= 1000) {
+    return `$${(value / 1000).toFixed(1)}B`;
+  } else if (value >= 1) {
+    // For values >= 1M, show with appropriate decimal places
+    return `$${value % 1 === 0 ? value.toFixed(0) : value.toFixed(1)}M`;
+  } else if (value >= 0.1) {
+    // For values between 100K and 1M, show in millions with decimals
+    return `$${value.toFixed(1)}M`;
+  } else {
+    // For values < 100K, show in thousands
+    return `$${(value * 1000).toFixed(0)}K`;
+  }
+};
+
 // Custom dot component that uses our color scheme
 const CustomDot = (props: any) => {
   const { cx, cy, payload, colorBy } = props;
@@ -104,7 +120,7 @@ export function InvestorTimeline({ data, investorName, colorBy = 'stage', maxAmo
             axisLine={{ stroke: '#374151', strokeWidth: 1 }}
             tickLine={{ stroke: '#374151', strokeWidth: 1 }}
             tick={{ fontSize: 12, fill: '#9CA3AF' }}
-            tickFormatter={(value) => `$${value}M`}
+            tickFormatter={formatAmountInMillions}
             domain={maxAmount ? [0, maxAmount] : [0, 'dataMax']}
           />
           <Tooltip
@@ -116,7 +132,7 @@ export function InvestorTimeline({ data, investorName, colorBy = 'stage', maxAmo
             }}
             itemStyle={{ color: "#fff", fontSize: "14px" }}
             formatter={(value: number, name, props) => [
-              `$${value.toFixed(1)}M`,
+              formatAmountInMillions(value),
               "Investment Amount"
             ]}
             labelFormatter={(timestamp) => {
@@ -140,7 +156,7 @@ export function InvestorTimeline({ data, investorName, colorBy = 'stage', maxAmo
                       })}
                     </p>
                     <p className="text-white font-medium">
-                      ${payload[0].value?.toFixed(1)}M
+                      {formatAmountInMillions(payload[0].value as number)}
                     </p>
                     {data.companyName && (
                       <p className="text-gray-400 text-sm">
