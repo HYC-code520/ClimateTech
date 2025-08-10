@@ -33,8 +33,8 @@ export function InvestorCard({
         : 'border-gray-700 hover:border-gray-600'
     }`}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-4 mb-4">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
           {selectionMode && onToggleSelection && (
             <Checkbox
               checked={isSelected}
@@ -42,9 +42,11 @@ export function InvestorCard({
               className="data-[state=checked]:bg-[var(--botanical-green)] data-[state=checked]:border-[var(--botanical-green)]"
             />
           )}
-          <h3 className="text-xl font-semibold text-white">{investor.name}</h3>
+          <h3 className="text-xl font-semibold text-white truncate" title={investor.name}>
+            {investor.name}
+          </h3>
         </div>
-        <div className="flex items-center gap-4 text-sm text-gray-400">
+        <div className="flex items-center gap-4 text-sm text-gray-400 flex-none whitespace-nowrap shrink-0">
           <div className="flex items-center gap-1">
             <Hash className="w-4 h-4" />
             <span>{investor.investmentCount} deals</span>
