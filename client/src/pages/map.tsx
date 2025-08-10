@@ -208,9 +208,40 @@ export default function MapPage() {
     setPosition({ coordinates: [0, 0], zoom: 1 });
   };
 
-  // Handle move end for zoom
+  // Handle move end for zoom with complete pan boundaries
   function handleMoveEnd(position: any) {
-    setPosition(position);
+    // Define pan boundaries to prevent infinite dragging in ALL directions
+    const maxLat = 75; // Maximum latitude (above Arctic)
+    const minLat = -60; // Minimum latitude (below Antarctica)
+    const maxLon = 180; // Maximum longitude (right edge)
+    const minLon = -180; // Minimum longitude (left edge)
+    
+    // Get current zoom level to adjust boundaries
+    const currentZoom = position.zoom;
+    
+    // Calculate dynamic boundaries based on zoom level
+    // At higher zoom, allow more panning; at lower zoom, restrict more
+    const zoomFactor = Math.max(1, currentZoom - 1);
+    const latBuffer = 15 / zoomFactor; // More restrictive at low zoom
+    const lonBuffer = 30 / zoomFactor; // More restrictive at low zoom
+    
+    // Apply zoom-based boundaries
+    const effectiveMaxLat = maxLat - latBuffer;
+    const effectiveMinLat = minLat + latBuffer;
+    const effectiveMaxLon = maxLon - lonBuffer;
+    const effectiveMinLon = minLon + lonBuffer;
+    
+    // Clamp coordinates to boundaries
+    const clampedCoords = [
+      Math.max(effectiveMinLon, Math.min(effectiveMaxLon, position.coordinates[0]) as number),
+      Math.max(effectiveMinLat, Math.min(effectiveMaxLat, position.coordinates[1]) as number)
+    ];
+    
+    // Update position with clamped coordinates
+    setPosition({
+      ...position,
+      coordinates: clampedCoords
+    });
   }
 
   // Get events for selected country
@@ -384,6 +415,69 @@ export default function MapPage() {
           {/* Map */}
           <div className="lg:col-span-3">
             <div className="bg-gray-900/30 border border-gray-700 rounded-lg p-4 h-[500px] relative overflow-hidden">
+              {/* Interactive Map Hint */}
+              <div className="absolute top-6 left-6 z-10">
+                <div className="bg-[var(--botanical-green)]/90 backdrop-blur-sm border border-[var(--botanical-green)] rounded-lg p-3 shadow-lg animate-pulse">
+                  <div className="flex items-center gap-2 text-white text-sm font-medium">
+                    <MapPin className="w-4 h-4" />
+                    <span>Click countries to see details</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Enhanced Zoom Controls */}
+              <div className="absolute top-6 right-6 z-10">
+                <div className="bg-gray-900/95 backdrop-blur-sm border border-gray-600 rounded-xl p-2 shadow-2xl">
+                  <div className="flex flex-col space-y-2">
+                    <button
+                      onClick={handleZoomIn}
+                      className="bg-[var(--botanical-green)] hover:bg-[var(--botanical-dark)] text-white p-3 rounded-lg transition-all duration-200 hover:scale-110 shadow-lg hover:shadow-xl"
+                      title="Zoom In (+)"
+                      aria-label="Zoom In"
+                    >
+                      <ZoomIn className="w-6 h-6" />
+                    </button>
+                    <button
+                      onClick={handleZoomOut}
+                      className="bg-[var(--botanical-green)] hover:bg-[botanical-dark)] text-white p-3 rounded-lg transition-all duration-200 hover:scale-110 shadow-lg hover:shadow-xl"
+                      title="Zoom Out (-)"
+                      aria-label="Zoom Out"
+                    >
+                      <ZoomOut className="w-6 h-6" />
+                    </button>
+                    <div className="border-t border-gray-600 my-1"></div>
+                    <button
+                      onClick={handleReset}
+                      className="bg-gray-600 hover:bg-gray-500 text-white p-3 rounded-lg transition-all duration-200 hover:scale-110 shadow-lg hover:shadow-xl"
+                      title="Reset View"
+                      aria-label="Reset Map View"
+                    >
+                      <RotateCcw className="w-6 h-6" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Map Interaction Guide */}
+              <div className="absolute bottom-6 left-6 z-10">
+                <div className="bg-gray-900/80 backdrop-blur-sm border border-gray-600 rounded-lg p-3 shadow-lg">
+                  <div className="flex items-center gap-3 text-gray-300 text-xs">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-[var(--botanical-green)] rounded-full animate-pulse"></div>
+                      <span>Hover for preview</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                      <span>Click for details</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                      <span>Scroll to zoom</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <ComposableMap 
                 projection="geoMercator" 
                 width={800} 

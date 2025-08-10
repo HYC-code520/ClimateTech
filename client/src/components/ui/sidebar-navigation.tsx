@@ -36,7 +36,7 @@ export function SidebarNavigation({ className = "" }: SidebarNavigationProps) {
     },
     {
       icon: TrendingUp,
-      label: "Funder Tracker",
+      label: "Funding Events",
       path: "/funding-tracker",
       active: location === "/funding-tracker"
     }

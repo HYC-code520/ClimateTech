@@ -160,7 +160,19 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
 
           {/* Preferred Stage */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Preferred Stage</label>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-300">Preferred Stage</label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-300 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-gray-800 border-gray-600 text-gray-200 max-w-xs">
+                    <p>Find investors who typically invest in your startup's funding stage. Early-stage investors (Seed/Series A) often provide mentorship and connections, while later-stage investors (Series B+) focus on scaling and growth.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Select value={filters.preferredStage} onValueChange={(value) => updateFilters({ preferredStage: value })}>
               <SelectTrigger className="bg-gray-800 border-gray-600">
                 <SelectValue placeholder="Any stage" />
@@ -178,7 +190,19 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
 
           {/* Sector Focus */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Sector Focus</label>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-300">Sector Focus</label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-300 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-gray-800 border-gray-600 text-gray-200 max-w-xs">
+                    <p>Target investors who specialize in your climate tech sector. Sector-focused investors bring deep industry knowledge, relevant networks, and often have strategic partnerships that can accelerate your startup's growth and market entry.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Select value={filters.sector} onValueChange={(value) => updateFilters({ sector: value })}>
               <SelectTrigger className="bg-gray-800 border-gray-600">
                 <SelectValue placeholder="Any sector" />
@@ -197,7 +221,19 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
 
           {/* Investment Size */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Typical Check Size</label>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-300">Typical Check Size</label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-300 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-gray-800 border-gray-600 text-gray-200 max-w-xs">
+                    <p>Match your funding needs with investors' typical investment ranges. Smaller checks ($1M-5M) often come with more hands-on support, while larger checks ($20M+) are ideal for capital-intensive climate solutions that need significant funding to scale.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Select value={filters.checkSize} onValueChange={(value) => updateFilters({ checkSize: value })}>
               <SelectTrigger className="bg-gray-800 border-gray-600">
                 <SelectValue placeholder="Any size" />
