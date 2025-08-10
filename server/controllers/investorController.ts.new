@@ -1,0 +1,100 @@
+import { Request, Response } from 'express';
+import { db } from '../db';
+import { companies, investors, fundingRounds, investments } from '../../shared/schema';
+import { sql, eq, desc, asc } from 'drizzle-orm';
+
+interface InvestorQueryParams {
+  minInvestments?: string;
+  searchTerm?: string;
+  stage?: string;
+  sortBy?: string;
+}
+
+export const getInvestorsWithTimeline = async (req: Request, res: Response) => {
+  try {
+    console.log("\n--- [API] Fetching Investors with Timeline ---");
+    
+    const params = req.query as InvestorQueryParams;
+    const minDeals = params.minInvestments || "0";
+    const { searchTerm, stage, sortBy = "name" } = params;
+
+    const investorIdsQuery = db
+      .select({
+        investorId: investors.id,
+      })
+      .from(investors)
+      .leftJoin(investments, eq(investors.id, investments.investorId))
+      .groupBy(investors.id)
+      .having(sql`count(${investments.id}) >= ${Number(minDeals)}`);
+
+    if (searchTerm) {
+      investorIdsQuery.where(sql`lower(${investors.name}) like ${`%${String(searchTerm).toLowerCase()}%`}`);
+    }
+
+    const qualifiedInvestors = await investorIdsQuery;
+    const investorIds = qualifiedInvestors.map(i => i.investorId);
+
+    if (investorIds.length === 0) {
+      return res.json([]);
+    }
+
+    const rawData = await db
+      .select({
+        investorId: investors.id,
+        investorName: investors.name,
+        fundingDate: fundingRounds.announcedAt,
+        amountUsd: fundingRounds.amountUsd,
+        companyName: companies.name,
+        stage: fundingRounds.stage,
+      })
+      .from(investors)
+      .where(sql`${investors.id} = ANY(${investorIds})`)
+      .leftJoin(investments, eq(investors.id, investments.investorId))
+      .leftJoin(fundingRounds, eq(investments.fundingRoundId, fundingRounds.id))
+      .leftJoin(companies, eq(fundingRounds.companyId, companies.id))
+      .orderBy(sortBy === 'name' ? asc(investors.name) : desc(fundingRounds.announcedAt));
+
+    const processed = rawData.reduce<Record<number, any>>((acc, row) => {
+      if (!acc[row.investorId]) {
+        acc[row.investorId] = {
+          id: row.investorId,
+          name: row.investorName,
+          investments: [],
+          totalInvested: 0,
+          investmentCount: 0
+        };
+      }
+
+      if (row.fundingDate && row.amountUsd) {
+        if (!stage || row.stage === stage) {
+          acc[row.investorId].investments.push({
+            date: row.fundingDate,
+            amount: row.amountUsd / 1000000,
+            companyName: row.companyName,
+            stage: row.stage
+          });
+          acc[row.investorId].totalInvested += row.amountUsd;
+          acc[row.investorId].investmentCount += 1;
+        }
+      }
+
+      return acc;
+    }, {});
+
+    const result = Object.values(processed)
+      .filter(investor => investor.investmentCount > 0)
+      .sort((a, b) => {
+        if (sortBy === 'mostActive') {
+          return b.investmentCount - a.investmentCount;
+        }
+        return a.name.localeCompare(b.name);
+      });
+
+    console.log(`Found ${result.length} investors matching criteria`);
+    res.status(200).json(result);
+
+  } catch (error) {
+    console.error('API Error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};

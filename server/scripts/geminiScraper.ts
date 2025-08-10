@@ -29,6 +29,7 @@ async function parseTextWithGemini(text: string, stage: string) {
           "fundingStage": "string",
           "leadInvestors": ["string"],
           "climateTechSector": "string (e.g., Energy, Mobility, Industry. Infer from the company description.)",
+          "tags": ["string (Extract key technology areas, business models, or focus areas. Examples: AI/ML, Hardware, SaaS, B2B, Carbon Removal, Solar, etc.)"],
           "announcedAt": "string (Find the specific date for this deal in the text and format it as YYYY-MM-DD. If no date is found, use null.)"
         }
         If a value cannot be found, use null. Do not wrap the JSON in markdown backticks.
@@ -167,5 +168,5 @@ export async function scrapeAndParse(targetUrl: string) {
 }
 
 // --- Execution ---
-const urlToScrape = 'https://www.ctvc.co/ctvc-wrapped-2024-227-2/';
+const urlToScrape = 'https://www.ctvc.co/bright-spots-and-sunsets-in-the-obbb-253/';
 scrapeAndParse(urlToScrape);

@@ -45,6 +45,7 @@ export const processScrapedDataController = async (req: Request, res: Response) 
                         industry: deal.climateTechSector,
                         problem_statement: deal.problem,
                         impact_metric: deal.impact,
+                        tags: deal.tags ? deal.tags.join(',') : null,
                     })
                     .select()
                     .single();
@@ -69,9 +70,19 @@ export const processScrapedDataController = async (req: Request, res: Response) 
                 if (deal.impact && !company.impact_metric) {
                     updates.impact_metric = deal.impact;
                 }
+                // Update tags if we have new ones
+                if (deal.tags && Array.isArray(deal.tags) && deal.tags.length > 0) {
+                    // If there are existing tags, merge them with new ones
+                    const existingTags = company.tags ? new Set(company.tags.split(',')) : new Set<string>();
+                    console.debug(`[${deal.companyName}] Existing tags:`, Array.from(existingTags));
+                    deal.tags.forEach((tag: string) => existingTags.add(tag.trim()));
+                    updates.tags = Array.from(existingTags).join(',');
+                    console.debug(`[${deal.companyName}] Updated tags:`, updates.tags);
+                }
 
                 // Only update if we have new information
                 if (Object.keys(updates).length > 0) {
+                    console.debug(`[${deal.companyName}] Updating company with:`, updates);
                     const { data: updatedCompany, error: updateError } = await supabase
                         .from('companies')
                         .update(updates)
@@ -79,7 +90,11 @@ export const processScrapedDataController = async (req: Request, res: Response) 
                         .select()
                         .single();
 
-                    if (updateError) throw updateError;
+                    if (updateError) {
+                        console.error(`[${deal.companyName}] Error updating company:`, updateError);
+                        throw updateError;
+                    }
+                    console.debug(`[${deal.companyName}] Successfully updated company:`, updatedCompany);
                     company = updatedCompany;
                 }
             }

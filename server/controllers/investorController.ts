@@ -6,8 +6,43 @@ import { sql, eq } from 'drizzle-orm';
 export const getInvestorsWithTimeline = async (req: Request, res: Response) => {
   try {
     console.log("\n--- [API] Fetching Investors with Timeline ---");
+    console.log("Query params:", req.query);
+    
+    // Get pagination parameters from query
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 20;
+    const minInvestments = req.query.minInvestments ? parseInt(req.query.minInvestments as string) : undefined;
+    const offset = (page - 1) * pageSize;
+    
+    console.log("Processed params:", { page, pageSize, minInvestments, offset });
 
-    // Get all investors with their investment data
+    // Create a subquery to count investments per investor
+    const investorInvestmentCounts = db
+      .select({
+        investorId: investments.investorId,
+        investmentCount: sql<number>`count(distinct ${fundingRounds.id})`.as('investmentCount')
+      })
+      .from(investments)
+      .leftJoin(fundingRounds, eq(investments.fundingRoundId, fundingRounds.id))
+      .groupBy(investments.investorId)
+      .as('investment_counts');
+
+    // First, get filtered total count of investors
+    const [{ count }] = await db
+      .select({ 
+        count: sql`count(distinct ${investors.id})` 
+      })
+      .from(investors)
+      .leftJoin(investorInvestmentCounts, eq(investors.id, investorInvestmentCounts.investorId))
+      .where(
+        minInvestments !== undefined
+          ? sql`COALESCE(${investorInvestmentCounts.investmentCount}, 0) >= ${minInvestments}`
+          : undefined
+      );
+      
+    console.log("Total filtered count:", count);
+
+    // Get paginated investors with their investment data
     const investorData = await db
       .select({
         investorId: investors.id,
@@ -16,12 +51,23 @@ export const getInvestorsWithTimeline = async (req: Request, res: Response) => {
         amountUsd: fundingRounds.amountUsd,
         companyName: companies.name,
         stage: fundingRounds.stage,
+        investmentCount: investorInvestmentCounts.investmentCount,
       })
       .from(investors)
+      .leftJoin(investorInvestmentCounts, eq(investors.id, investorInvestmentCounts.investorId))
       .leftJoin(investments, eq(investors.id, investments.investorId))
       .leftJoin(fundingRounds, eq(investments.fundingRoundId, fundingRounds.id))
       .leftJoin(companies, eq(fundingRounds.companyId, companies.id))
-      .orderBy(investors.name, fundingRounds.announcedAt);
+      .where(
+        minInvestments !== undefined
+          ? sql`COALESCE(${investorInvestmentCounts.investmentCount}, 0) >= ${minInvestments}`
+          : undefined
+      )
+      .orderBy(sql`${investors.name} ASC`)
+      .limit(pageSize)
+      .offset(offset);
+      
+    console.log("Query results count:", investorData.length);
 
     // Group the data by investor
     const groupedData = investorData.reduce((acc, row) => {
@@ -59,8 +105,16 @@ export const getInvestorsWithTimeline = async (req: Request, res: Response) => {
       return investor;
     });
 
-    console.log(`Found ${result.length} investors`);
-    res.status(200).json(result);
+    console.log(`Found ${result.length} investors for page ${page}`);
+    res.status(200).json({
+      investors: result,
+      pagination: {
+        currentPage: page,
+        pageSize,
+        totalItems: Number(count),
+        totalPages: Math.ceil(Number(count) / pageSize)
+      }
+    });
 
   } catch (error) {
     console.error('API Error:', error);

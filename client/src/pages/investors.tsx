@@ -8,8 +8,19 @@ import { Loader2, GitCompare, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // API fetching function
-const fetchInvestors = async () => {
-  const response = await fetch('/api/investors/timeline');
+const fetchInvestors = async (page: number, pageSize: number, filters: any) => {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  });
+
+  // Only add minInvestments if it's not an empty string
+  if (filters.minInvestments !== '') {
+    params.append('minInvestments', filters.minInvestments);
+  }
+  
+  console.log('Fetching with params:', Object.fromEntries(params));
+  const response = await fetch(`/api/investors/timeline?${params}`);
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
@@ -17,6 +28,9 @@ const fetchInvestors = async () => {
 };
 
 export default function InvestorsPage() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 20;
+
   const [filters, setFilters] = useState({
     searchTerm: "",
     minInvestments: "",
@@ -30,10 +44,13 @@ export default function InvestorsPage() {
   const [selectedInvestors, setSelectedInvestors] = useState<number[]>([]);
   const [comparisonMode, setComparisonMode] = useState(false);
 
-  const { data: investors = [], isLoading, isError } = useQuery({
-    queryKey: ['investors'],
-    queryFn: fetchInvestors,
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['investors', currentPage, pageSize, filters.minInvestments],
+    queryFn: () => fetchInvestors(currentPage, pageSize, filters),
   });
+
+  const investors = data?.investors || [];
+  const pagination = data?.pagination;
 
   // Toggle investor selection
   const toggleInvestorSelection = (investorId: number) => {
@@ -237,17 +254,78 @@ export default function InvestorsPage() {
             <p className="text-gray-500 text-sm mt-2">Try adjusting your filters</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {filteredInvestors.map((investor: any) => (
-              <InvestorCard 
-                key={investor.id} 
-                investor={investor}
-                isSelected={selectedInvestors.includes(investor.id)}
-                onToggleSelection={() => toggleInvestorSelection(investor.id)}
-                selectionMode={selectedInvestors.length > 0}
-                globalMaxInvestment={globalMaxInvestment}
-              />
-            ))}
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {filteredInvestors.map((investor: any) => (
+                <InvestorCard 
+                  key={investor.id} 
+                  investor={investor}
+                  isSelected={selectedInvestors.includes(investor.id)}
+                  onToggleSelection={() => toggleInvestorSelection(investor.id)}
+                  selectionMode={selectedInvestors.length > 0}
+                  globalMaxInvestment={globalMaxInvestment}
+                />
+              ))}
+            </div>
+            
+            {/* Pagination Controls */}
+            {pagination && (
+              <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+                <div className="flex flex-1 justify-between sm:hidden">
+                  <Button
+                    onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
+                    disabled={currentPage === 1}
+                    variant="outline"
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    onClick={() => setCurrentPage(page => Math.min(pagination.totalPages, page + 1))}
+                    disabled={currentPage === pagination.totalPages}
+                    variant="outline"
+                  >
+                    Next
+                  </Button>
+                </div>
+                <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      Showing{' '}
+                      <span className="font-medium">
+                        {(currentPage - 1) * pageSize + 1}
+                      </span>
+                      {' '}to{' '}
+                      <span className="font-medium">
+                        {Math.min(currentPage * pageSize, pagination.totalItems)}
+                      </span>
+                      {' '}of{' '}
+                      <span className="font-medium">{pagination.totalItems}</span>
+                      {' '}investors
+                    </p>
+                  </div>
+                  <div>
+                    <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                      <Button
+                        onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
+                        disabled={currentPage === 1}
+                        variant="outline"
+                        className="rounded-l-md"
+                      >
+                        Previous
+                      </Button>
+                      <Button
+                        onClick={() => setCurrentPage(page => Math.min(pagination.totalPages, page + 1))}
+                        disabled={currentPage === pagination.totalPages}
+                        variant="outline"
+                        className="rounded-r-md"
+                      >
+                        Next
+                      </Button>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
