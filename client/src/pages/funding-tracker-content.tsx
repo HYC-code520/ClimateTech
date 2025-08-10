@@ -443,12 +443,6 @@ export default function FundingTrackerContent() {
               <div className="border-t border-gray-700 p-6 bg-gray-800/30">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-300 mb-2">Problem Statement</h4>
-                    <p className="text-white mb-4">{event.Problem || 'No description available'}</p>
-
-                  </div>
-
-                  <div>
                     <h4 className="text-sm font-medium text-gray-300 mb-2">Tags</h4>
                     <div className="flex flex-wrap gap-2 mb-4">
                       {event.Tags ? event.Tags.split(',').map((tag, idx) => (
@@ -459,7 +453,9 @@ export default function FundingTrackerContent() {
                         <span className="px-2 py-1 bg-gray-700 rounded-full text-xs">No tags</span>
                       )}
                     </div>
+                  </div>
 
+                  <div>
                     <h4 className="text-sm font-medium text-gray-300 mb-2">Source</h4>
                     {event.SourceURL ? (
                       <a 
