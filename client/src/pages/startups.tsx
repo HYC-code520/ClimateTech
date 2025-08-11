@@ -20,11 +20,12 @@ import { useQuery } from "@tanstack/react-query";
 
 // Use the same API function you already have
 const fetchInvestors = async () => {
-  const response = await fetch('/api/investors/timeline');
+  const response = await fetch('/api/investors/timeline?pageSize=1000'); // Get all investors for startups page
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
-  return response.json();
+  const data = await response.json();
+  return data.investors || []; // Extract investors array from paginated response
 };
 
 export default function StartupsPage() {
@@ -50,6 +51,11 @@ export default function StartupsPage() {
     }
 
     return investors.filter(investor => {
+      // Safety check for investments array
+      if (!investor || !investor.investments || !Array.isArray(investor.investments)) {
+        return false;
+      }
+
       let match = true;
 
       // Match by sector (if investor has investments in that sector)
@@ -71,7 +77,9 @@ export default function StartupsPage() {
 
       // Match by funding size (based on average investment)
       if (startupProfile.fundingNeeded && startupProfile.fundingNeeded !== "all") {
-        const avgInvestment = investor.totalInvested / investor.investmentCount;
+        const avgInvestment = investor.totalInvested && investor.investmentCount 
+          ? investor.totalInvested / investor.investmentCount 
+          : 0;
         const fundingNeeded = startupProfile.fundingNeeded;
         
         let sizeMatch = false;
@@ -101,6 +109,11 @@ export default function StartupsPage() {
   };
 
   const getMatchScore = (investor: any) => {
+    // Safety check for investments array
+    if (!investor || !investor.investments || !Array.isArray(investor.investments)) {
+      return 0;
+    }
+
     let score = 0;
     let total = 0;
 
@@ -146,6 +159,31 @@ export default function StartupsPage() {
 
     return total > 0 ? Math.round((score / total) * 100) : 100;
   };
+
+  // Add error handling after all hooks are defined
+  if (isError) {
+    return (
+      <NavbarSidebarLayout>
+        <div className="w-full px-8 md:px-12 py-8">
+          <div className="text-center text-red-400">
+            <p>Error loading investor data. Please try again later.</p>
+          </div>
+        </div>
+      </NavbarSidebarLayout>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <NavbarSidebarLayout>
+        <div className="w-full px-8 md:px-12 py-8">
+          <div className="text-center text-gray-400">
+            <p>Loading investor data...</p>
+          </div>
+        </div>
+      </NavbarSidebarLayout>
+    );
+  }
 
   return (
     <NavbarSidebarLayout>
