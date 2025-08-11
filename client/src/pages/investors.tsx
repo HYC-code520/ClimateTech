@@ -14,23 +14,22 @@ const fetchInvestors = async (page: number, pageSize: number, filters: any) => {
     pageSize: String(pageSize),
   });
 
-  // Add all non-empty filters to params
+  // Add filters if they have values
   if (filters.minInvestments !== '') {
     params.append('minInvestments', filters.minInvestments);
   }
-  if (filters.maxInvestments !== '') {
-    params.append('maxInvestments', filters.maxInvestments);
-  }
+  
   if (filters.preferredStage !== '') {
     params.append('preferredStage', filters.preferredStage);
   }
-  if (filters.sector !== '') {
-    params.append('sector', filters.sector);
-  }
+
   if (filters.searchTerm !== '') {
     params.append('searchTerm', filters.searchTerm);
   }
-  params.append('sortBy', filters.sortBy);
+
+  if (filters.maxInvestments !== '') {
+    params.append('maxInvestments', filters.maxInvestments);
+  }
   
   console.log('Fetching with params:', Object.fromEntries(params));
   const response = await fetch(`/api/investors/timeline?${params}`);
@@ -58,22 +57,18 @@ export default function InvestorsPage() {
   const [comparisonMode, setComparisonMode] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: [
-      'investors',
-      currentPage,
-      pageSize,
-      filters.minInvestments,
-      filters.maxInvestments,
-      filters.preferredStage,
-      filters.sector,
-      filters.searchTerm,
-      filters.sortBy
-    ],
+    queryKey: ['investors', currentPage, pageSize, filters.minInvestments, filters.preferredStage, filters.searchTerm, filters.maxInvestments],
     queryFn: () => fetchInvestors(currentPage, pageSize, filters),
   });
 
   const investors = data?.investors || [];
   const pagination = data?.pagination;
+
+  // Reset to page 1 when filters change
+  const handleFiltersChange = (newFilters: any) => {
+    setFilters(newFilters);
+    setCurrentPage(1);
+  };
 
   // Toggle investor selection
   const toggleInvestorSelection = (investorId: number) => {
@@ -105,31 +100,8 @@ export default function InvestorsPage() {
     }
   };
 
-  // All filtering is now handled at the database level, just handle sorting here
-  const filteredInvestors = useMemo(() => {
-    const sorted = [...investors];
-    
-    // Sort investors
-    sorted.sort((a: any, b: any) => {
-      switch (filters.sortBy) {
-        case "mostActive":
-          return b.investmentCount - a.investmentCount;
-        case "totalInvested":
-          return b.totalInvested - a.totalInvested;
-        case "recentActivity":
-          const aLatest = Math.max(...a.investments.map((inv: any) => new Date(inv.date).getTime()));
-          const bLatest = Math.max(...b.investments.map((inv: any) => new Date(inv.date).getTime()));
-          return bLatest - aLatest;
-        case "dealCount":
-          return b.investmentCount - a.investmentCount;
-        case "name":
-        default:
-          return a.name.localeCompare(b.name);
-      }
-    });
-
-    return sorted;
-  }, [investors, filters]);
+  // Since filtering is now done on the backend, we can use the data directly
+  const filteredInvestors = investors;
 
   // Calculate global maximum investment amount for normalized Y-axis
   const globalMaxInvestment = useMemo(() => {
@@ -213,7 +185,7 @@ export default function InvestorsPage() {
         )}
         
         {/* Filters */}
-        <InvestorFilters onFiltersChange={setFilters} />
+        <InvestorFilters onFiltersChange={handleFiltersChange} />
         
         {/* Content */}
         {isLoading ? (

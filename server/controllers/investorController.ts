@@ -6,13 +6,16 @@ export const getInvestorsWithTimeline = async (req: Request, res: Response) => {
     console.log("\n--- [API] Fetching Investors with Timeline ---");
     console.log("Query params:", req.query);
     
-    // Get pagination parameters from query
+    // Get pagination and filter parameters from query
     const page = parseInt(req.query.page as string) || 1;
     const pageSize = parseInt(req.query.pageSize as string) || 20;
     const minInvestments = req.query.minInvestments ? parseInt(req.query.minInvestments as string) : undefined;
+    const maxInvestments = req.query.maxInvestments ? parseInt(req.query.maxInvestments as string) : undefined;
+    const preferredStage = req.query.preferredStage as string || '';
+    const searchTerm = req.query.searchTerm as string || '';
     const offset = (page - 1) * pageSize;
     
-    console.log("Processed params:", { page, pageSize, minInvestments, offset });
+    console.log("Processed params:", { page, pageSize, minInvestments, maxInvestments, preferredStage, searchTerm, offset });
 
     // Debug query for Alantra's investments
     const { data: alantraDebug, error: alantraError } = await supabase
@@ -35,32 +38,53 @@ export const getInvestorsWithTimeline = async (req: Request, res: Response) => {
       console.log('Alantra Debug Data:', JSON.stringify(alantraDebug, null, 2));
     }
 
-    // Get all investors with their investment counts
-    const { data: allInvestors, error: investorsError } = await supabase
+    // Get all investors with their investment counts and stage filtering
+    let investorQuery = supabase
       .from('investors')
       .select(`
         id,
         name,
         investments(
-          funding_rounds(id)
+          funding_rounds(id, stage)
         )
       `);
+
+    // Apply search filter if provided
+    if (searchTerm) {
+      investorQuery = investorQuery.ilike('name', `%${searchTerm}%`);
+    }
+
+    const { data: allInvestors, error: investorsError } = await investorQuery;
 
     if (investorsError) {
       throw investorsError;
     }
 
-    // Process and filter investors
-    const processedInvestors = allInvestors?.map((investor: any) => ({
-      ...investor,
-      investmentCount: investor.investments?.reduce((count: number, inv: any) => 
-        count + (inv.funding_rounds ? 1 : 0), 0) || 0
-    })) || [];
+    // Process investors with client-side filtering for complex conditions
+    const processedInvestors = allInvestors?.map((investor: any) => {
+      const investments = investor.investments || [];
+      const fundingRounds = investments.map((inv: any) => inv.funding_rounds).filter(Boolean);
+      
+      return {
+        ...investor,
+        investmentCount: fundingRounds.length,
+        hasStage: preferredStage ? fundingRounds.some((fr: any) => fr.stage === preferredStage) : true
+      };
+    }) || [];
 
-    // Filter by minimum investments if specified
-    const filteredInvestors = minInvestments 
-      ? processedInvestors.filter((inv: any) => inv.investmentCount >= minInvestments)
-      : processedInvestors;
+    // Apply all filters
+    let filteredInvestors = processedInvestors.filter((investor: any) => {
+      // Filter by minimum investments
+      if (minInvestments && investor.investmentCount < minInvestments) return false;
+      
+      // Filter by maximum investments  
+      if (maxInvestments && investor.investmentCount > maxInvestments) return false;
+      
+      // Filter by preferred stage
+      if (preferredStage && !investor.hasStage) return false;
+      
+      return true;
+    });
 
     // Sort and paginate
     const sortedInvestors = filteredInvestors.sort((a: any, b: any) => a.name.localeCompare(b.name));
