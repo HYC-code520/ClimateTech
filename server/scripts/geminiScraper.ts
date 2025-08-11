@@ -167,6 +167,6 @@ export async function scrapeAndParse(targetUrl: string) {
   }
 }
 
-// --- Execution ---
-const urlToScrape = 'https://www.ctvc.co/bright-spots-and-sunsets-in-the-obbb-253/';
-scrapeAndParse(urlToScrape);
+// --- Execution (Commented out to prevent auto-run on server start) ---
+// const urlToScrape = 'https://www.ctvc.co/bright-spots-and-sunsets-in-the-obbb-253/';
+// scrapeAndParse(urlToScrape);
