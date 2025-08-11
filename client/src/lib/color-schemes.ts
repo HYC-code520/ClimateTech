@@ -8,6 +8,7 @@ export const stageColors = {
   'Series D': '#166534', // Very dark green
   'Series E': '#14532d', // Darkest green
   'Series F+': '#052e16', // Almost black green
+  'Growth': '#059669',    // Teal green for growth rounds
   'IPO': '#1f2937',      // Dark gray for IPO
   'Acquisition': '#374151', // Gray for acquisition
   'Unknown': '#6b7280'   // Gray for unknown stages

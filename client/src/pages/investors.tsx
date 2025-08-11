@@ -14,10 +14,23 @@ const fetchInvestors = async (page: number, pageSize: number, filters: any) => {
     pageSize: String(pageSize),
   });
 
-  // Only add minInvestments if it's not an empty string
+  // Add all non-empty filters to params
   if (filters.minInvestments !== '') {
     params.append('minInvestments', filters.minInvestments);
   }
+  if (filters.maxInvestments !== '') {
+    params.append('maxInvestments', filters.maxInvestments);
+  }
+  if (filters.preferredStage !== '') {
+    params.append('preferredStage', filters.preferredStage);
+  }
+  if (filters.sector !== '') {
+    params.append('sector', filters.sector);
+  }
+  if (filters.searchTerm !== '') {
+    params.append('searchTerm', filters.searchTerm);
+  }
+  params.append('sortBy', filters.sortBy);
   
   console.log('Fetching with params:', Object.fromEntries(params));
   const response = await fetch(`/api/investors/timeline?${params}`);
@@ -45,7 +58,17 @@ export default function InvestorsPage() {
   const [comparisonMode, setComparisonMode] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['investors', currentPage, pageSize, filters.minInvestments],
+    queryKey: [
+      'investors',
+      currentPage,
+      pageSize,
+      filters.minInvestments,
+      filters.maxInvestments,
+      filters.preferredStage,
+      filters.sector,
+      filters.searchTerm,
+      filters.sortBy
+    ],
     queryFn: () => fetchInvestors(currentPage, pageSize, filters),
   });
 
@@ -82,59 +105,12 @@ export default function InvestorsPage() {
     }
   };
 
-  // Filter and sort investors based on current filters
+  // All filtering is now handled at the database level, just handle sorting here
   const filteredInvestors = useMemo(() => {
-    let filtered = [...investors];
-
-    // Search by name
-    if (filters.searchTerm) {
-      filtered = filtered.filter(investor =>
-        investor.name.toLowerCase().includes(filters.searchTerm.toLowerCase())
-      );
-    }
-
-    // Filter by investment count
-    if (filters.minInvestments) {
-      filtered = filtered.filter(investor =>
-        investor.investmentCount >= parseInt(filters.minInvestments)
-      );
-    }
-    if (filters.maxInvestments) {
-      filtered = filtered.filter(investor =>
-        investor.investmentCount <= parseInt(filters.maxInvestments)
-      );
-    }
-
-    // Filter by preferred stage (if they have investments in that stage)
-    if (filters.preferredStage) {
-      filtered = filtered.filter(investor =>
-        investor.investments.some((inv: any) => inv.stage === filters.preferredStage)
-      );
-    }
-
-    // Filter by check size based on average investment amount
-    if (filters.checkSize) {
-      filtered = filtered.filter(investor => {
-        const averageInvestment = investor.totalInvested / investor.investmentCount;
-        const averageInvestmentM = averageInvestment / 1000000; // Convert to millions
-        
-        switch (filters.checkSize) {
-          case "small":
-            return averageInvestmentM >= 1 && averageInvestmentM <= 5;
-          case "medium":
-            return averageInvestmentM > 5 && averageInvestmentM <= 20;
-          case "large":
-            return averageInvestmentM > 20 && averageInvestmentM <= 100;
-          case "mega":
-            return averageInvestmentM > 100;
-          default:
-            return true;
-        }
-      });
-    }
-
+    const sorted = [...investors];
+    
     // Sort investors
-    filtered.sort((a, b) => {
+    sorted.sort((a: any, b: any) => {
       switch (filters.sortBy) {
         case "mostActive":
           return b.investmentCount - a.investmentCount;
@@ -152,7 +128,7 @@ export default function InvestorsPage() {
       }
     });
 
-    return filtered;
+    return sorted;
   }, [investors, filters]);
 
   // Calculate global maximum investment amount for normalized Y-axis

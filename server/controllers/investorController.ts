@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
-import { db } from '../db';
-import { companies, investors, fundingRounds, investments } from '../../shared/schema';
-import { sql, eq } from 'drizzle-orm';
+import { supabase } from '../db/supabase';
 
 export const getInvestorsWithTimeline = async (req: Request, res: Response) => {
   try {
@@ -16,94 +14,114 @@ export const getInvestorsWithTimeline = async (req: Request, res: Response) => {
     
     console.log("Processed params:", { page, pageSize, minInvestments, offset });
 
-    // Create a subquery to count investments per investor
-    const investorInvestmentCounts = db
-      .select({
-        investorId: investments.investorId,
-        investmentCount: sql<number>`count(distinct ${fundingRounds.id})`.as('investmentCount')
-      })
-      .from(investments)
-      .leftJoin(fundingRounds, eq(investments.fundingRoundId, fundingRounds.id))
-      .groupBy(investments.investorId)
-      .as('investment_counts');
+    // Debug query for Alantra's investments
+    const { data: alantraDebug, error: alantraError } = await supabase
+      .from('investors')
+      .select(`
+        id,
+        name,
+        investments!inner(
+          funding_rounds!inner(
+            announced_at,
+            amount_usd,
+            stage,
+            companies!inner(name)
+          )
+        )
+      `)
+      .eq('name', 'Alantra');
 
-    // First, get filtered total count of investors
-    const [{ count }] = await db
-      .select({ 
-        count: sql`count(distinct ${investors.id})` 
-      })
-      .from(investors)
-      .leftJoin(investorInvestmentCounts, eq(investors.id, investorInvestmentCounts.investorId))
-      .where(
-        minInvestments !== undefined
-          ? sql`COALESCE(${investorInvestmentCounts.investmentCount}, 0) >= ${minInvestments}`
-          : undefined
-      );
-      
-    console.log("Total filtered count:", count);
+    if (!alantraError && alantraDebug) {
+      console.log('Alantra Debug Data:', JSON.stringify(alantraDebug, null, 2));
+    }
 
-    // Get paginated investors with their investment data
-    const investorData = await db
-      .select({
-        investorId: investors.id,
-        investorName: investors.name,
-        fundingDate: fundingRounds.announcedAt,
-        amountUsd: fundingRounds.amountUsd,
-        companyName: companies.name,
-        stage: fundingRounds.stage,
-        investmentCount: investorInvestmentCounts.investmentCount,
-      })
-      .from(investors)
-      .leftJoin(investorInvestmentCounts, eq(investors.id, investorInvestmentCounts.investorId))
-      .leftJoin(investments, eq(investors.id, investments.investorId))
-      .leftJoin(fundingRounds, eq(investments.fundingRoundId, fundingRounds.id))
-      .leftJoin(companies, eq(fundingRounds.companyId, companies.id))
-      .where(
-        minInvestments !== undefined
-          ? sql`COALESCE(${investorInvestmentCounts.investmentCount}, 0) >= ${minInvestments}`
-          : undefined
-      )
-      .orderBy(sql`${investors.name} ASC`)
-      .limit(pageSize)
-      .offset(offset);
-      
-    console.log("Query results count:", investorData.length);
+    // Get all investors with their investment counts
+    const { data: allInvestors, error: investorsError } = await supabase
+      .from('investors')
+      .select(`
+        id,
+        name,
+        investments(
+          funding_rounds(id)
+        )
+      `);
 
-    // Group the data by investor
-    const groupedData = investorData.reduce((acc, row) => {
-      if (!acc[row.investorId]) {
-        acc[row.investorId] = {
-          id: row.investorId,
-          name: row.investorName,
-          investments: [],
-          totalInvested: 0,
-          investmentCount: 0
-        };
+    if (investorsError) {
+      throw investorsError;
+    }
+
+    // Process and filter investors
+    const processedInvestors = allInvestors?.map((investor: any) => ({
+      ...investor,
+      investmentCount: investor.investments?.reduce((count: number, inv: any) => 
+        count + (inv.funding_rounds ? 1 : 0), 0) || 0
+    })) || [];
+
+    // Filter by minimum investments if specified
+    const filteredInvestors = minInvestments 
+      ? processedInvestors.filter((inv: any) => inv.investmentCount >= minInvestments)
+      : processedInvestors;
+
+    // Sort and paginate
+    const sortedInvestors = filteredInvestors.sort((a: any, b: any) => a.name.localeCompare(b.name));
+    const paginatedInvestors = sortedInvestors.slice(offset, offset + pageSize);
+
+    // Get detailed investment data for paginated investors
+    const investorIds = paginatedInvestors.map((inv: any) => inv.id);
+    
+    const { data: detailedData, error: detailedError } = await supabase
+      .from('investors')
+      .select(`
+        id,
+        name,
+        investments!inner(
+          funding_rounds!inner(
+            announced_at,
+            amount_usd,
+            stage,
+            companies!inner(name)
+          )
+        )
+      `)
+      .in('id', investorIds);
+
+    if (detailedError) {
+      throw detailedError;
+    }
+    console.log("Query results count:", detailedData?.length || 0);
+
+    // Process the data into the expected format
+    const result = detailedData?.map((investor: any) => {
+      const investments = investor.investments?.map((inv: any) => ({
+        date: inv.funding_rounds.announced_at,
+        amount: inv.funding_rounds.amount_usd / 1000000, // Convert to millions
+        companyName: inv.funding_rounds.companies.name,
+        stage: inv.funding_rounds.stage
+      })) || [];
+
+      // Sort investments by date descending
+      investments.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+      const totalInvested = investments.reduce((sum: number, inv: any) => sum + (inv.amount * 1000000), 0);
+
+      if (investor.name === 'Alantra') {
+        console.log('Processed Alantra data:', JSON.stringify({
+          id: investor.id,
+          name: investor.name,
+          investments,
+          totalInvested,
+          investmentCount: investments.length
+        }, null, 2));
       }
 
-      if (row.fundingDate && row.amountUsd) {
-        acc[row.investorId].investments.push({
-          date: row.fundingDate,
-          amount: row.amountUsd / 1000000, // Convert to millions
-          companyName: row.companyName,
-          stage: row.stage
-        });
-        acc[row.investorId].totalInvested += row.amountUsd;
-        acc[row.investorId].investmentCount += 1;
-      }
-
-      return acc;
-    }, {} as Record<string, any>);
-
-    // Convert to array and add mock timeline data for better visualization
-    const result = Object.values(groupedData).map((investor: any) => {
-      // Remove this mock data generation
-      // if (investor.investments.length === 0) {
-      //   investor.investments = generateMockTimelineData(investor.name);
-      // }
-      
-      return investor;
-    });
+      return {
+        id: investor.id,
+        name: investor.name,
+        investments,
+        totalInvested,
+        investmentCount: investments.length
+      };
+    }) || [];
 
     console.log(`Found ${result.length} investors for page ${page}`);
     res.status(200).json({
@@ -111,8 +129,8 @@ export const getInvestorsWithTimeline = async (req: Request, res: Response) => {
       pagination: {
         currentPage: page,
         pageSize,
-        totalItems: Number(count),
-        totalPages: Math.ceil(Number(count) / pageSize)
+        totalItems: filteredInvestors.length,
+        totalPages: Math.ceil(filteredInvestors.length / pageSize)
       }
     });
 
@@ -120,4 +138,4 @@ export const getInvestorsWithTimeline = async (req: Request, res: Response) => {
     console.error('API Error:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
-}; 
+};
