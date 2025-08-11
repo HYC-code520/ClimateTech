@@ -168,5 +168,5 @@ export async function scrapeAndParse(targetUrl: string) {
 }
 
 // --- Execution (Commented out to prevent auto-run on server start) ---
-// const urlToScrape = 'https://www.ctvc.co/bright-spots-and-sunsets-in-the-obbb-253/';
+// const urlToScrape = 'https://www.ctvc.co/epa-puts-emissions-rules-in-danger-257/';
 // scrapeAndParse(urlToScrape);

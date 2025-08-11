@@ -30,6 +30,18 @@ const fetchInvestors = async (page: number, pageSize: number, filters: any) => {
   if (filters.maxInvestments !== '') {
     params.append('maxInvestments', filters.maxInvestments);
   }
+
+  if (filters.sortBy !== '') {
+    params.append('sortBy', filters.sortBy);
+  }
+
+  if (filters.sector !== '') {
+    params.append('sector', filters.sector);
+  }
+
+  if (filters.checkSize !== '') {
+    params.append('checkSize', filters.checkSize);
+  }
   
   console.log('Fetching with params:', Object.fromEntries(params));
   const response = await fetch(`/api/investors/timeline?${params}`);
@@ -49,6 +61,7 @@ export default function InvestorsPage() {
     maxInvestments: "",
     preferredStage: "",
     sector: "",
+    checkSize: "",
     sortBy: "name"
   });
 
@@ -57,7 +70,7 @@ export default function InvestorsPage() {
   const [comparisonMode, setComparisonMode] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['investors', currentPage, pageSize, filters.minInvestments, filters.preferredStage, filters.searchTerm, filters.maxInvestments],
+    queryKey: ['investors', currentPage, pageSize, filters.minInvestments, filters.preferredStage, filters.searchTerm, filters.maxInvestments, filters.sortBy, filters.sector, filters.checkSize],
     queryFn: () => fetchInvestors(currentPage, pageSize, filters),
   });
 
