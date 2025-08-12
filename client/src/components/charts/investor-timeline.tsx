@@ -1,6 +1,7 @@
 import * as React from "react"
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Dot } from "recharts"
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Dot, Legend } from "recharts"
 import { getStageColor, getSectorColor } from "@/lib/color-schemes"
+import { useState } from "react";
 
 interface InvestorTimelineProps {
   data: {
@@ -20,15 +21,35 @@ const formatAmountInMillions = (value: number): string => {
   if (value >= 1000) {
     return `$${(value / 1000).toFixed(1)}B`;
   } else if (value >= 1) {
-    // For values >= 1M, show with appropriate decimal places
     return `$${value % 1 === 0 ? value.toFixed(0) : value.toFixed(1)}M`;
   } else if (value >= 0.1) {
-    // For values between 100K and 1M, show in millions with decimals
     return `$${value.toFixed(1)}M`;
   } else {
-    // For values < 100K, show in thousands
     return `$${(value * 1000).toFixed(0)}K`;
   }
+};
+
+// Custom Legend component
+const CustomLegend = ({ colorMode, data }: { colorMode: 'stage' | 'sector', data: any[] }) => {
+  // Get unique stages/sectors from data
+  const uniqueValues = Array.from(new Set(data.map(item => colorMode === 'stage' ? item.stage : item.sector))).filter(Boolean);
+  
+  return (
+    <div className="flex flex-wrap gap-3 mt-2 px-4">
+      {uniqueValues.map((value) => (
+        <div key={value} className="flex items-center gap-2">
+          <div 
+            className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+            style={{ 
+              backgroundColor: colorMode === 'stage' ? getStageColor(value) : getSectorColor(value),
+              boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+            }}
+          />
+          <span className="text-xs text-gray-300">{value}</span>
+        </div>
+      ))}
+    </div>
+  );
 };
 
 // Custom dot component that uses our color scheme
@@ -36,11 +57,14 @@ const CustomDot = (props: any) => {
   const { cx, cy, payload, colorBy } = props;
   
   let color = 'var(--botanical-green)'; // default
+  let label = '';
   
   if (colorBy === 'stage' && payload.stage) {
     color = getStageColor(payload.stage);
+    label = payload.stage;
   } else if (colorBy === 'sector' && payload.sector) {
     color = getSectorColor(payload.sector);
+    label = payload.sector;
   }
   
   return (
@@ -51,6 +75,8 @@ const CustomDot = (props: any) => {
       fill={color} 
       stroke={color}
       strokeWidth={2}
+      className="cursor-pointer"
+      data-tip={label}
     />
   );
 };
@@ -65,130 +91,147 @@ export function InvestorTimeline({ data, investorName, colorBy = 'stage', maxAmo
     }));
   }, [data]);
   
-  // Fixed start date: December 2024
-  const fixedStartDate = new Date('2024-12-01').getTime();
-  
-  // Calculate end date: either the latest investment + 6 months, or June 2025 (whichever is later)
-  const latestInvestmentDate = chartData.length > 0 
-    ? Math.max(...chartData.map(d => d.timestamp))
-    : fixedStartDate;
-  
-  const endDateFromData = new Date(latestInvestmentDate);
-  endDateFromData.setMonth(endDateFromData.getMonth() + 6); // Add 6 months buffer
-  
-  const minEndDate = new Date('2025-06-01').getTime();
-  const fixedEndDate = Math.max(endDateFromData.getTime(), minEndDate);
+  // Create a fixed 12-month scale starting from December 2024
+  const generateMonthScale = () => {
+    const months = [];
+    
+    // Start from December 2024
+    const startDate = new Date('2024-12-01');
+    
+    // Generate 12 months from December 2024
+    for (let i = 0; i < 12; i++) {
+      const monthDate = new Date(startDate);
+      monthDate.setMonth(startDate.getMonth() + i);
+      months.push({
+        month: monthDate.getMonth(),
+        year: monthDate.getFullYear(),
+        timestamp: monthDate.getTime(),
+        label: monthDate.toLocaleDateString('en-US', { month: 'short' })
+      });
+    }
+    
+    return months;
+  };
+
+  const monthScale = generateMonthScale();
+  const startTimestamp = monthScale[0].timestamp;
+  const endTimestamp = monthScale[monthScale.length - 1].timestamp;
+
+  // Add state for the color mode
+  const [colorMode, setColorMode] = useState<'stage' | 'sector'>(colorBy);
 
   return (
-    <div className="w-full h-[250px]">
+    <div className="w-full">
+      {/* Color mode toggle */}
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm text-gray-400">
-          Colored by: {colorBy === 'stage' ? 'Funding Stage' : 'Sector'}
+          Colored by: {colorMode === 'stage' ? 'Funding Stage' : 'Sector'}
         </span>
         <div className="flex gap-2">
           <button 
-            onClick={() => {/* We'll implement this toggle */}}
-            className="text-xs px-2 py-1 bg-gray-700 rounded hover:bg-gray-600 transition-colors"
+            onClick={() => setColorMode('stage')}
+            className={`text-xs px-2 py-1 rounded transition-colors ${
+              colorMode === 'stage' 
+                ? 'bg-[var(--botanical-green)] text-white' 
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
           >
             Stage
           </button>
           <button 
-            onClick={() => {/* We'll implement this toggle */}}
-            className="text-xs px-2 py-1 bg-gray-600 rounded hover:bg-gray-500 transition-colors"
+            onClick={() => setColorMode('sector')}
+            className={`text-xs px-2 py-1 rounded transition-colors ${
+              colorMode === 'sector' 
+                ? 'bg-[var(--botanical-green)] text-white' 
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
           >
             Sector
           </button>
         </div>
       </div>
-      
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-          <XAxis 
-            dataKey="timestamp" 
-            type="number"
-            scale="time"
-            domain={[fixedStartDate, fixedEndDate]}
-            axisLine={{ stroke: '#374151', strokeWidth: 1 }}
-            tickLine={{ stroke: '#374151', strokeWidth: 1 }}
-            tick={{ fontSize: 12, fill: '#9CA3AF' }}
-            tickFormatter={(timestamp) => {
-              const d = new Date(timestamp);
-              return `${d.getMonth() + 1}/${d.getFullYear().toString().slice(-2)}`;
-            }}
-          />
-          <YAxis 
-            axisLine={{ stroke: '#374151', strokeWidth: 1 }}
-            tickLine={{ stroke: '#374151', strokeWidth: 1 }}
-            tick={{ fontSize: 12, fill: '#9CA3AF' }}
-            tickFormatter={formatAmountInMillions}
-            domain={maxAmount ? [0, maxAmount] : [0, 'dataMax']}
-          />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: "#1F2937",
-              border: "1px solid #374151",
-              borderRadius: "8px",
-              boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-            }}
-            itemStyle={{ color: "#fff", fontSize: "14px" }}
-            formatter={(value: number, name, props) => [
-              formatAmountInMillions(value),
-              "Investment Amount"
-            ]}
-            labelFormatter={(timestamp) => {
-              const d = new Date(timestamp);
-              return d.toLocaleDateString('en-US', { 
-                month: 'short', 
-                day: 'numeric', 
-                year: 'numeric' 
-              });
-            }}
-            content={({ active, payload, label }) => {
-              if (active && payload && payload.length) {
-                const data = payload[0].payload;
-                return (
-                  <div className="bg-gray-900 border border-gray-600 rounded-lg p-3 shadow-lg">
-                    <p className="text-gray-300 text-sm mb-2">
-                      {new Date(data.timestamp).toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric', 
-                        year: 'numeric' 
-                      })}
-                    </p>
-                    <p className="text-white font-medium">
-                      {formatAmountInMillions(payload[0].value as number)}
-                    </p>
-                    {data.companyName && (
-                      <p className="text-gray-400 text-sm">
-                        {data.companyName}
+
+      {/* Legend */}
+      <CustomLegend colorMode={colorMode} data={data} />
+
+      {/* Chart */}
+      <div className="h-[250px] mt-4">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <XAxis 
+              dataKey="timestamp" 
+              type="number"
+              scale="time"
+              domain={[startTimestamp, endTimestamp]}
+              axisLine={{ stroke: '#374151', strokeWidth: 1 }}
+              tickLine={{ stroke: '#374151', strokeWidth: 1 }}
+              tick={{ fontSize: 12, fill: '#9CA3AF' }}
+              ticks={monthScale.map(m => m.timestamp)}
+              tickFormatter={(timestamp) => {
+                const month = monthScale.find(m => m.timestamp === timestamp);
+                return month ? month.label : '';
+              }}
+            />
+            <YAxis 
+              axisLine={{ stroke: '#374151', strokeWidth: 1 }}
+              tickLine={{ stroke: '#374151', strokeWidth: 1 }}
+              tick={{ fontSize: 12, fill: '#9CA3AF' }}
+              tickFormatter={formatAmountInMillions}
+              domain={maxAmount ? [0, maxAmount] : [0, 'dataMax']}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#1F2937",
+                border: "1px solid #374151",
+                borderRadius: "8px",
+                boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+              }}
+              itemStyle={{ color: "#fff", fontSize: "14px" }}
+              formatter={(value: number, name, props) => [
+                formatAmountInMillions(value),
+                "Investment Amount"
+              ]}
+              content={({ active, payload, label }) => {
+                if (active && payload && payload.length) {
+                  const data = payload[0].payload;
+                  return (
+                    <div className="bg-gray-900 border border-gray-600 rounded-lg p-3 shadow-lg">
+                      <p className="text-gray-300 text-sm mb-2">
+                        {new Date(data.timestamp).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric', 
+                          year: 'numeric' 
+                        })}
                       </p>
-                    )}
-                    {data.stage && (
-                      <p className="text-gray-400 text-sm">
-                        {data.stage}
+                      <p className="text-white font-medium">
+                        {formatAmountInMillions(payload[0].value as number)}
                       </p>
-                    )}
-                  </div>
-                );
-              }
-              return null;
-            }}
-          />
-          <Line
-            type="monotone"
-            dataKey="amount"
-            stroke="var(--botanical-green)"
-            strokeWidth={3}
-            dot={<CustomDot colorBy={colorBy} />}
-            activeDot={{ 
-              r: 8, 
-              fill: "var(--botanical-green)",
-              stroke: "var(--botanical-green)",
-              strokeWidth: 2
-            }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+                      {/* Add stage/sector info */}
+                      <p className="text-gray-400 text-sm mt-1">
+                        {colorMode === 'stage' ? data.stage : data.sector}
+                      </p>
+                    </div>
+                  );
+                }
+                return null;
+              }}
+            />
+            <Line
+              type="monotone"
+              dataKey="amount"
+              stroke="var(--botanical-green)"
+              strokeWidth={3}
+              dot={<CustomDot colorBy={colorMode} />}
+              activeDot={{ 
+                r: 8, 
+                fill: "var(--botanical-green)",
+                stroke: "var(--botanical-green)",
+                strokeWidth: 2
+              }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 } 

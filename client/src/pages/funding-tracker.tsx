@@ -1,9 +1,11 @@
-import { Leaf, User, Search, ChevronDown, Calendar, Filter, ExternalLink, MapPin, DollarSign, Building2 } from "lucide-react";
+import { Leaf, User, Search, ChevronDown, Calendar, Filter, ExternalLink, MapPin, DollarSign, Building2, ChevronRight, ArrowDownUp, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "../hooks/use-debounce";
+import { getStageColor } from "@/lib/color-schemes";
+import { getSectorColor } from "@/lib/color-schemes";
 
 // Define the shape of a single funding event based on our API contract
 type FundingEvent = {
@@ -93,7 +95,7 @@ export default function FundingTrackerPage() {
           <button 
             className="text-[var(--botanical-green)] hover:text-[var(--botanical-light)] transition-colors font-medium"
           >
-            Funding Tracker
+            Funding Events
           </button>
           <button 
             onClick={() => setLocation("/about")}
@@ -137,10 +139,10 @@ export default function FundingTrackerPage() {
         {/* Page Title */}
         <div className="mb-8">
           <h1 className="text-4xl md:text-6xl text-white leading-none tracking-tight font-semibold mb-4">
-            Funding Tracker
+            Funding Events
           </h1>
           <p className="text-xl text-white/80 max-w-2xl">
-            Track climate tech funding rounds, investments, and market trends in real-time.
+            Explore climate tech funding rounds, investments, and market trends with comprehensive data and insights.
           </p>
         </div>
 
@@ -178,9 +180,13 @@ export default function FundingTrackerPage() {
                   <option value="">All Sectors</option>
                   <option value="Energy">Energy</option>
                   <option value="Mobility">Mobility</option>
-                  <option value="Food & Ag">Food & Ag</option>
-                  <option value="Carbon Tech">Carbon Tech</option>
-                  <option value="Water Tech">Water Tech</option>
+                  <option value="Food">Food</option>
+                  <option value="Agriculture">Agriculture</option>
+                  <option value="Carbon Removal">Carbon Removal</option>
+                  <option value="Water">Water</option>
+                  <option value="Industry">Industry</option>
+                  <option value="Circular Fashion">Circular Fashion</option>
+                  <option value="Insurance">Insurance</option>
                 </select>
                 <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
               </div>
@@ -328,7 +334,15 @@ export default function FundingTrackerPage() {
                   {/* Funding Details */}
                   <div>
                     <div className="text-sm text-gray-400 mb-1">Stage</div>
-                    <div className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-sm inline-block">
+                    <div className="px-2 py-1 rounded text-sm inline-flex items-center gap-2"
+                         style={{ 
+                           backgroundColor: `${getStageColor(event.FundingStage)}20`,
+                           color: getStageColor(event.FundingStage)
+                         }}>
+                      <div 
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: getStageColor(event.FundingStage) }}
+                      />
                       {event.FundingStage}
                     </div>
                   </div>

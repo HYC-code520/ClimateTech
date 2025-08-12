@@ -38,13 +38,14 @@ export default function InsightsPage() {
           {/* Left Navigation */}
           <nav className="hidden md:flex space-x-8">
             <button 
-              onClick={() => setLocation("/funding-tracker")}
-              className="text-white hover:text-[var(--botanical-green)] transition-colors font-medium"
+              onClick={() => setLocation("/funding-events")}
+              className="text-[var(--botanical-green)] hover:text-[var(--botanical-light)] transition-colors font-medium"
             >
-              Funding Tracker
+              Funding Events
             </button>
             <button 
-              className="text-[var(--botanical-green)] hover:text-[var(--botanical-light)] transition-colors font-medium"
+              onClick={() => setLocation("/insights")}
+              className="text-white hover:text-[var(--botanical-green)] transition-colors font-medium"
             >
               Insights
             </button>

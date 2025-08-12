@@ -156,7 +156,10 @@ export default function InvestorsPage() {
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">Investors</h1>
             <p className="text-gray-400">
-              Track investment patterns and funding timelines • {filteredInvestors.length} investors
+              Track investment patterns and funding timelines • {filteredInvestors.length} of {pagination?.totalItems || '...'} investors
+              {pagination && pagination.totalPages > 1 && (
+                <span className="text-gray-500"> • Page {pagination.currentPage} of {pagination.totalPages}</span>
+              )}
             </p>
           </div>
           
@@ -231,12 +234,13 @@ export default function InvestorsPage() {
             
             {/* Pagination Controls */}
             {pagination && (
-              <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+              <div className="flex items-center justify-between border-t border-gray-700 bg-transparent px-4 py-3 sm:px-6">
                 <div className="flex flex-1 justify-between sm:hidden">
                   <Button
                     onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
                     disabled={currentPage === 1}
                     variant="outline"
+                    className="bg-transparent border-[var(--botanical-green)] text-[var(--botanical-green)] hover:bg-[var(--botanical-green)]/30 hover:text-white hover:border-[var(--botanical-green)] hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:border-gray-600 disabled:text-gray-500 disabled:bg-transparent"
                   >
                     Previous
                   </Button>
@@ -244,33 +248,34 @@ export default function InvestorsPage() {
                     onClick={() => setCurrentPage(page => Math.min(pagination.totalPages, page + 1))}
                     disabled={currentPage === pagination.totalPages}
                     variant="outline"
+                    className="bg-transparent border-[var(--botanical-green)] text-[var(--botanical-green)] hover:bg-[var(--botanical-green)]/30 hover:text-white hover:border-[var(--botanical-green)] hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:border-gray-600 disabled:text-gray-500 disabled:bg-transparent"
                   >
                     Next
                   </Button>
                 </div>
                 <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm text-gray-300">
                       Showing{' '}
-                      <span className="font-medium">
+                      <span className="font-medium text-white">
                         {(currentPage - 1) * pageSize + 1}
                       </span>
                       {' '}to{' '}
-                      <span className="font-medium">
+                      <span className="font-medium text-white">
                         {Math.min(currentPage * pageSize, pagination.totalItems)}
                       </span>
                       {' '}of{' '}
-                      <span className="font-medium">{pagination.totalItems}</span>
+                      <span className="font-medium text-white">{pagination.totalItems}</span>
                       {' '}investors
                     </p>
                   </div>
                   <div>
-                    <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                    <nav className="isolate inline-flex gap-3 rounded-md shadow-sm" aria-label="Pagination">
                       <Button
                         onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
                         disabled={currentPage === 1}
                         variant="outline"
-                        className="rounded-l-md"
+                        className="rounded-md bg-transparent border-[var(--botanical-green)] text-[var(--botanical-green)] hover:bg-[var(--botanical-green)]/40 hover:text-white hover:border-[var(--botanical-green)] hover:shadow-lg hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:border-gray-600 disabled:text-gray-500 disabled:bg-transparent disabled:hover:scale-100"
                       >
                         Previous
                       </Button>
@@ -278,7 +283,7 @@ export default function InvestorsPage() {
                         onClick={() => setCurrentPage(page => Math.min(pagination.totalPages, page + 1))}
                         disabled={currentPage === pagination.totalPages}
                         variant="outline"
-                        className="rounded-r-md"
+                        className="rounded-md bg-transparent border-[var(--botanical-green)] text-[var(--botanical-green)] hover:bg-[var(--botanical-green)]/40 hover:text-white hover:border-[var(--botanical-green)] hover:shadow-lg hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:border-gray-600 disabled:text-gray-500 disabled:bg-transparent disabled:hover:scale-100"
                       >
                         Next
                       </Button>

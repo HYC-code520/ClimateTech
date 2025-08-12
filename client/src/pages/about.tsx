@@ -39,12 +39,13 @@ export default function AboutPage() {
           {/* Left Navigation */}
           <nav className="hidden md:flex space-x-8">
             <button 
-              onClick={() => setLocation("/funding-tracker")}
+              onClick={() => setLocation("/investors")}
               className="text-white hover:text-[var(--botanical-green)] transition-colors font-medium"
             >
-              Funding Tracker
+              Funder Tracker
             </button>
             <button 
+              onClick={() => setLocation("/funding-events")}
               className="text-[var(--botanical-green)] hover:text-[var(--botanical-light)] transition-colors font-medium"
             >
               About

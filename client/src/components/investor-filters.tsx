@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { getSectorColor } from "@/lib/color-schemes";
 import { useState } from "react";
 
 interface InvestorFiltersProps {
@@ -66,6 +67,23 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
     };
     
     onFiltersChange(clearedForParent);
+  };
+
+  const getStageColor = (stage: string) => {
+    switch (stage) {
+      case "Seed":
+        return "#93c5fd"; // Gold
+      case "Series A":
+        return "#3b82f6"; // Green
+      case "Series B":
+        return "#2563eb"; // Blue
+      case "Series C":
+        return "#1d4ed8"; // Purple
+      case "Series D+":
+        return "#1e40af"; // Red
+      default:
+        return "#9E9E9E"; // Gray
+    }
   };
 
   return (
@@ -174,16 +192,76 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
               </TooltipProvider>
             </div>
             <Select value={filters.preferredStage} onValueChange={(value) => updateFilters({ preferredStage: value })}>
-              <SelectTrigger className="bg-gray-800 border-gray-600">
+              <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                 <SelectValue placeholder="Any stage" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Any Stage</SelectItem>
-                <SelectItem value="Seed">Seed</SelectItem>
-                <SelectItem value="Series A">Series A</SelectItem>
-                <SelectItem value="Series B">Series B</SelectItem>
-                <SelectItem value="Series C">Series C</SelectItem>
-                <SelectItem value="Series D+">Series D+</SelectItem>
+              <SelectContent className="bg-gray-800 border-gray-600">
+                <SelectItem value="all" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-gray-400 border border-gray-300 shadow-sm" />
+                    <span>Any Stage</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Seed" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getStageColor('Seed'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Seed</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Series A" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getStageColor('Series A'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Series A</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Series B" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getStageColor('Series B'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Series B</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Series C" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getStageColor('Series C'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Series C</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Series D+" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getStageColor('Series D+'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Series D+</span>
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -204,17 +282,124 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
               </TooltipProvider>
             </div>
             <Select value={filters.sector} onValueChange={(value) => updateFilters({ sector: value })}>
-              <SelectTrigger className="bg-gray-800 border-gray-600">
+              <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                 <SelectValue placeholder="Any sector" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Any Sector</SelectItem>
-                <SelectItem value="Energy">Energy</SelectItem>
-                <SelectItem value="Transportation">Transportation</SelectItem>
-                <SelectItem value="Food & Agriculture">Food & Agriculture</SelectItem>
-                <SelectItem value="Industry">Industry</SelectItem>
-                <SelectItem value="Buildings">Buildings</SelectItem>
-                <SelectItem value="Carbon Management">Carbon Management</SelectItem>
+              <SelectContent className="bg-gray-800 border-gray-600">
+                <SelectItem value="all" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-gray-400 border border-gray-300 shadow-sm" />
+                    <span>Any Sector</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Energy" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getSectorColor('Energy'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Energy</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Industry" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getSectorColor('Industry'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Industry</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Water" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getSectorColor('Water'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Water</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Mobility" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getSectorColor('Mobility'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Mobility</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Food" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getSectorColor('Food'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Food</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Agriculture" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getSectorColor('Agriculture'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Agriculture</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Carbon Removal" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getSectorColor('Carbon Removal'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Carbon Removal</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Circular Fashion" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getSectorColor('Circular Fashion'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Circular Fashion</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Insurance" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getSectorColor('Insurance'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Insurance</span>
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -235,15 +420,15 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
               </TooltipProvider>
             </div>
             <Select value={filters.checkSize} onValueChange={(value) => updateFilters({ checkSize: value })}>
-              <SelectTrigger className="bg-gray-800 border-gray-600">
+              <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                 <SelectValue placeholder="Any size" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Any Size</SelectItem>
-                <SelectItem value="small">$1M - $5M</SelectItem>
-                <SelectItem value="medium">$5M - $20M</SelectItem>
-                <SelectItem value="large">$20M - $100M</SelectItem>
-                <SelectItem value="mega">$100M+</SelectItem>
+              <SelectContent className="bg-gray-800 border-gray-600">
+                <SelectItem value="all" className="text-white hover:bg-gray-700 focus:bg-gray-700">Any Size</SelectItem>
+                <SelectItem value="small" className="text-white hover:bg-gray-700 focus:bg-gray-700">$1M - $5M</SelectItem>
+                <SelectItem value="medium" className="text-white hover:bg-gray-700 focus:bg-gray-700">$5M - $20M</SelectItem>
+                <SelectItem value="large" className="text-white hover:bg-gray-700 focus:bg-gray-700">$20M - $100M</SelectItem>
+                <SelectItem value="mega" className="text-white hover:bg-gray-700 focus:bg-gray-700">$100M+</SelectItem>
               </SelectContent>
             </Select>
           </div>

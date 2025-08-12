@@ -23,7 +23,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
-      <Route path="/funding-tracker" component={FundingTrackerWithSidebar} />
+      <Route path="/funding-events" component={FundingTrackerWithSidebar} />
       <Route path="/dashboard" component={DashboardPage} />
       <Route path="/investors" component={InvestorsPage} />
       <Route path="/startups" component={StartupsPage} />
