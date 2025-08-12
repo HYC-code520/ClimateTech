@@ -14,11 +14,17 @@ export const stageColors = {
   'Unknown': '#9ca3af'     // Light grey
 };
 
-// Sector colors - only keeping sectors with actual data
+// Sector colors - matching your database sectors
 export const sectorColors = {
-  'Energy': '#fbbf24',           // Yellow
-  'Industry': '#ef4444',         // Red
+  'Energy': '#c90000',           // Red
+  'Industry': '#ffaf75',         // Orange
   'Water': '#0ea5e9',            // Sky blue
+  'Mobility': '#00ff00',         // Neon green
+  'Food': '#ff59ee',             // Darker pink
+  'Agriculture': '#8b5cf6',      // Purple
+  'Carbon Tech': '#e8ff59',   // Pastel yellow
+  'Circular Fashion': '#f97316', // Orange
+  'Insurance': '#06b6d4',        // Cyan
   'Other': '#6b7280'             // Gray
 };
 

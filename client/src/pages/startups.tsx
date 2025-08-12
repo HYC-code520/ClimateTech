@@ -19,6 +19,7 @@ import {
   HelpCircle
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { getSectorColor } from "@/lib/color-schemes";
 
 // Use the same API function you already have
 const fetchInvestors = async () => {
@@ -296,12 +297,120 @@ export default function StartupsPage() {
                       <SelectValue placeholder="Select sector" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-800 border-gray-600">
-                      <SelectItem value="all" className="text-white hover:bg-gray-700 focus:bg-gray-700">Any Sector</SelectItem>
-                      <SelectItem value="Energy" className="text-white hover:bg-gray-700 focus:bg-gray-700">Energy</SelectItem>
-                      <SelectItem value="Mobility" className="text-white hover:bg-gray-700 focus:bg-gray-700">Mobility</SelectItem>
-                      <SelectItem value="Food & Ag" className="text-white hover:bg-gray-700 focus:bg-gray-700">Food & Ag</SelectItem>
-                      <SelectItem value="Carbon Tech" className="text-white hover:bg-gray-700 focus:bg-gray-700">Carbon Tech</SelectItem>
-                      <SelectItem value="Water Tech" className="text-white hover:bg-gray-700 focus:bg-gray-700">Water Tech</SelectItem>
+                      <SelectItem value="all" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-gray-400 border border-gray-300 shadow-sm" />
+                          <span>Any Sector</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Energy" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                            style={{ 
+                              backgroundColor: getSectorColor('Energy'),
+                              boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                            }}
+                          />
+                          <span>Energy</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Mobility" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                            style={{ 
+                              backgroundColor: getSectorColor('Mobility'),
+                              boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                            }}
+                          />
+                          <span>Mobility</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Food" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                            style={{ 
+                              backgroundColor: getSectorColor('Food'),
+                              boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                            }}
+                          />
+                          <span>Food</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Agriculture" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                            style={{ 
+                              backgroundColor: getSectorColor('Agriculture'),
+                              boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                            }}
+                          />
+                          <span>Agriculture</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Carbon Removal" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                            style={{ 
+                              backgroundColor: getSectorColor('Carbon Removal'),
+                              boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                            }}
+                          />
+                          <span>Carbon Removal</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Water" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                            style={{ 
+                              backgroundColor: getSectorColor('Water'),
+                              boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                            }}
+                          />
+                          <span>Water</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Industry" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                            style={{ 
+                              backgroundColor: getSectorColor('Industry'),
+                              boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                            }}
+                          />
+                          <span>Industry</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Circular Fashion" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                            style={{ 
+                              backgroundColor: getSectorColor('Circular Fashion'),
+                              boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                            }}
+                          />
+                          <span>Circular Fashion</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Insurance" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                            style={{ 
+                              backgroundColor: getSectorColor('Insurance'),
+                              boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                            }}
+                          />
+                          <span>Insurance</span>
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

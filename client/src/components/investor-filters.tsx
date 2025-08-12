@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { getSectorColor } from "@/lib/color-schemes";
 import { useState } from "react";
 
 interface InvestorFiltersProps {
@@ -80,19 +81,6 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
         return "#1d4ed8"; // Purple
       case "Series D+":
         return "#1e40af"; // Red
-      default:
-        return "#9E9E9E"; // Gray
-    }
-  };
-
-  const getSectorColor = (sector: string) => {
-    switch (sector) {
-      case "Energy":
-        return "#fbbf24"; // Orange
-      case "Industry":
-        return "#ef4444"; // Green
-      case "Water":
-        return "#0ea5e9"; // Blue
       default:
         return "#9E9E9E"; // Gray
     }
@@ -338,6 +326,78 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
                       }}
                     />
                     <span>Water</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Mobility" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getSectorColor('Mobility'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Mobility</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Food" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getSectorColor('Food'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Food</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Agriculture" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getSectorColor('Agriculture'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Agriculture</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Carbon Removal" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getSectorColor('Carbon Removal'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Carbon Removal</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Circular Fashion" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getSectorColor('Circular Fashion'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Circular Fashion</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="Insurance" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                      style={{ 
+                        backgroundColor: getSectorColor('Insurance'),
+                        boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                      }}
+                    />
+                    <span>Insurance</span>
                   </div>
                 </SelectItem>
               </SelectContent>

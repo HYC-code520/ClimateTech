@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "../hooks/use-debounce";
 import { getStageColor } from "@/lib/color-schemes";
+import { getSectorColor } from "@/lib/color-schemes";
 
 // Define the shape of a single funding event based on our API contract
 type FundingEvent = {
@@ -179,9 +180,13 @@ export default function FundingTrackerPage() {
                   <option value="">All Sectors</option>
                   <option value="Energy">Energy</option>
                   <option value="Mobility">Mobility</option>
-                  <option value="Food & Ag">Food & Ag</option>
-                  <option value="Carbon Tech">Carbon Tech</option>
-                  <option value="Water Tech">Water Tech</option>
+                  <option value="Food">Food</option>
+                  <option value="Agriculture">Agriculture</option>
+                  <option value="Carbon Removal">Carbon Removal</option>
+                  <option value="Water">Water</option>
+                  <option value="Industry">Industry</option>
+                  <option value="Circular Fashion">Circular Fashion</option>
+                  <option value="Insurance">Insurance</option>
                 </select>
                 <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
               </div>
