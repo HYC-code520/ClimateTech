@@ -19,7 +19,7 @@ import {
   HelpCircle
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getSectorColor } from "@/lib/color-schemes";
+import { getSectorColor, getStageColor } from "@/lib/color-schemes";
 
 // Use the same API function you already have
 const fetchInvestors = async () => {
@@ -423,12 +423,72 @@ export default function StartupsPage() {
                       <SelectValue placeholder="Select stage" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-800 border-gray-600">
-                      <SelectItem value="all" className="text-white hover:bg-gray-700 focus:bg-gray-700">Any Stage</SelectItem>
-                      <SelectItem value="Seed" className="text-white hover:bg-gray-700 focus:bg-gray-700">Seed</SelectItem>
-                      <SelectItem value="Series A" className="text-white hover:bg-gray-700 focus:bg-gray-700">Series A</SelectItem>
-                      <SelectItem value="Series B" className="text-white hover:bg-gray-700 focus:bg-gray-700">Series B</SelectItem>
-                      <SelectItem value="Series C" className="text-white hover:bg-gray-700 focus:bg-gray-700">Series C</SelectItem>
-                      <SelectItem value="Series D+" className="text-white hover:bg-gray-700 focus:bg-gray-700">Series D+</SelectItem>
+                      <SelectItem value="all" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-gray-400 border border-gray-300 shadow-sm" />
+                          <span>Any Stage</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Seed" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                            style={{ 
+                              backgroundColor: getStageColor('Seed'),
+                              boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                            }}
+                          />
+                          <span>Seed</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Series A" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                            style={{ 
+                              backgroundColor: getStageColor('Series A'),
+                              boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                            }}
+                          />
+                          <span>Series A</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Series B" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                            style={{ 
+                              backgroundColor: getStageColor('Series B'),
+                              boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                            }}
+                          />
+                          <span>Series B</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Series C" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                            style={{ 
+                              backgroundColor: getStageColor('Series C'),
+                              boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                            }}
+                          />
+                          <span>Series C</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="Series D+" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full border-2 border-white/50 shadow-lg" 
+                            style={{ 
+                              backgroundColor: getStageColor('Series D+'),
+                              boxShadow: `0 0 0 1px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3)`
+                            }}
+                          />
+                          <span>Series D+</span>
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

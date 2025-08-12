@@ -118,15 +118,41 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
           </Select>
         </div>
 
-        {/* Advanced Filters Toggle */}
+        {/* Advanced Filters Toggle - Enhanced with animations */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="border-2 border-[var(--botanical-green)] text-[var(--botanical-green)] hover:border-[var(--botanical-green)] hover:bg-[var(--botanical-green)]/10 hover:text-[var(--botanical-green)] !bg-transparent !border-[var(--botanical-green)]"
+          className={`
+            relative overflow-hidden transition-all duration-300 ease-in-out
+            border-2 border-[var(--botanical-green)] text-[var(--botanical-green)] 
+            hover:border-[var(--botanical-green)] hover:bg-[var(--botanical-green)]/10 
+            hover:text-[var(--botanical-green)] hover:scale-105 hover:shadow-lg
+            !bg-transparent !border-[var(--botanical-green)]
+            ${!showAdvanced ? 'animate-pulse hover:animate-none' : ''}
+            ${!showAdvanced ? 'shadow-[0_0_20px_rgba(16,185,129,0.3)]' : ''}
+            ${!showAdvanced ? 'hover:shadow-[0_0_25px_rgba(16,185,129,0.5)]' : ''}
+          `}
         >
-          <Filter className="w-4 h-4 mr-2" />
-          {showAdvanced ? 'Hide' : 'More'} Filters
+          {/* Animated background glow effect */}
+          {!showAdvanced && (
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[var(--botanical-green)]/10 to-transparent animate-pulse" />
+          )}
+          
+          {/* Animated border effect */}
+          {!showAdvanced && (
+            <div className="absolute inset-0 border-2 border-[var(--botanical-green)] rounded-md animate-ping opacity-20" />
+          )}
+          
+          <Filter className={`w-4 h-4 mr-2 transition-transform duration-300 ${!showAdvanced ? 'animate-bounce' : ''}`} />
+          <span className="relative z-10">
+            {showAdvanced ? 'Hide' : 'More'} Filters
+          </span>
+          
+          {/* Sparkle effect */}
+          {!showAdvanced && (
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-[var(--botanical-green)] rounded-full animate-ping" />
+          )}
         </Button>
 
         {/* Clear Filters */}
@@ -142,7 +168,7 @@ export function InvestorFilters({ onFiltersChange }: InvestorFiltersProps) {
 
       {/* Advanced Filters */}
       {showAdvanced && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-gray-700">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-gray-700 animate-in slide-in-from-top-2 duration-300">
           {/* Investment Count Range */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
