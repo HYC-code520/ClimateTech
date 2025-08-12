@@ -116,10 +116,10 @@ export default function FundingTrackerContent() {
       {/* Page Title */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">
-          Funding Tracker
+          Funding Events
         </h1>
         <p className="text-gray-400">
-          Track climate tech funding rounds, investments, and market trends in real-time.
+          Explore climate tech funding rounds, investments, and market trends with comprehensive data and insights.
         </p>
       </div>
 

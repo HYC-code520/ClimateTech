@@ -1,33 +1,24 @@
-// Funding stage colors - lighter to darker green for progression
+// Funding stage colors - matching the funding event page colors
 export const stageColors = {
-  'Pre-Seed': '#86efac', // Very light green
-  'Seed': '#4ade80',     // Light green
-  'Series A': '#22c55e', // Medium green
-  'Series B': '#16a34a', // Darker green
-  'Series C': '#15803d', // Dark green
-  'Series D': '#166534', // Very dark green
-  'Series E': '#14532d', // Darkest green
-  'Series F+': '#052e16', // Almost black green
-  'Growth': '#059669',    // Teal green for growth rounds
-  'IPO': '#1f2937',      // Dark gray for IPO
-  'Acquisition': '#374151', // Gray for acquisition
-  'Unknown': '#6b7280'   // Gray for unknown stages
+  'Pre-Seed': '#ffffff',    // White
+  'Seed': '#93c5fd',       // Light blue
+  'Series A': '#3b82f6',   // Medium blue
+  'Series B': '#2563eb',   // Blue
+  'Series C': '#1d4ed8',   // Darker blue
+  'Series D': '#1e40af',   // Dark blue
+  'Series E': '#1e3a8a',   // Very dark blue
+  'Series F+': '#0f172a',  // Almost black blue
+  'Growth': '#7c3aed',     // Purple
+  'IPO': '#6b7280',        // Grey
+  'Acquisition': '#4b5563', // Dark grey
+  'Unknown': '#9ca3af'     // Light grey
 };
 
-// Sector colors - distinct colors for different climate tech sectors
+// Sector colors - only keeping sectors with actual data
 export const sectorColors = {
-  'Energy': '#3b82f6',           // Blue
-  'Transportation': '#8b5cf6',   // Purple
-  'Food & Agriculture': '#f59e0b', // Orange
+  'Energy': '#fbbf24',           // Yellow
   'Industry': '#ef4444',         // Red
-  'Buildings': '#06b6d4',        // Cyan
-  'Carbon Management': '#10b981', // Emerald
-  'Waste & Recycling': '#84cc16', // Lime
   'Water': '#0ea5e9',            // Sky blue
-  'Materials': '#f97316',        // Orange
-  'Finance': '#ec4899',          // Pink
-  'Software': '#6366f1',         // Indigo
-  'Hardware': '#78716c',         // Stone
   'Other': '#6b7280'             // Gray
 };
 

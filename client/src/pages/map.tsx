@@ -172,11 +172,17 @@ export default function MapPage() {
     const data = countryData[country];
     if (!data) return { size: 0, color: '#1f2937', opacity: 0 };
 
+    // Base size calculation based on event count
     const baseSize = Math.min(Math.max(data.count * 2, 6), 25);
+    
+    // Adjust size based on zoom level - smaller dots when zoomed in
+    const zoomFactor = Math.max(0.3, 1 / position.zoom);
+    const adjustedSize = baseSize * zoomFactor;
+    
     const intensity = Math.min(data.totalFunding / 50000000, 1);
     
     return {
-      size: baseSize,
+      size: adjustedSize,
       color: `#10b981`,
       opacity: 0.7 + intensity * 0.3,
       glow: intensity > 0.5
@@ -541,7 +547,7 @@ export default function MapPage() {
 
               {/* Enhanced Tooltip */}
               {hoveredCountry && countryData[hoveredCountry] && (
-                <div className="absolute top-4 right-4 bg-gray-900/95 border border-gray-600 rounded-lg p-4 shadow-xl max-w-sm backdrop-blur-sm">
+                <div className="absolute bottom-4 right-4 bg-gray-900/95 border border-gray-600 rounded-lg p-4 shadow-xl max-w-sm backdrop-blur-sm">
                   <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-[var(--botanical-green)]" />
                     {hoveredCountry}
