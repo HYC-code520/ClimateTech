@@ -2,7 +2,8 @@ import { NavbarSidebarLayout } from "@/components/ui/navbar-sidebar-layout";
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from "react-simple-maps";
-import { ZoomIn, ZoomOut, RotateCcw, ExternalLink, Calendar, DollarSign, Building2, MapPin } from "lucide-react";
+import { ZoomIn, ZoomOut, RotateCcw, ExternalLink, Calendar, DollarSign, Building2, MapPin, Palette } from "lucide-react";
+import { getSectorColor, getAllSectorColors } from "@/lib/color-schemes";
 
 // Type definition for funding events
 type FundingEvent = {
@@ -86,6 +87,7 @@ export default function MapPage() {
   const [showAllTop, setShowAllTop] = useState(false);
   const [position, setPosition] = useState({ coordinates: [0, 0], zoom: 1 });
   const [showDetailedEvents, setShowDetailedEvents] = useState(false);
+  const [colorMode, setColorMode] = useState<'funding' | 'sector'>('funding');
 
   // Fetch funding events data
   const { data: fundingEvents = [], isLoading, isError } = useQuery<FundingEvent[]>({
@@ -104,6 +106,7 @@ export default function MapPage() {
       events: FundingEvent[];
       recentEvents: FundingEvent[];
       topSectors: Array<{ sector: string; count: number; funding: number }>;
+      dominantSector: string;
     }> = {};
 
     fundingEvents.forEach(event => {
@@ -119,7 +122,8 @@ export default function MapPage() {
           companies: [],
           events: [],
           recentEvents: [],
-          topSectors: []
+          topSectors: [],
+          dominantSector: ''
         };
       }
 
@@ -162,6 +166,9 @@ export default function MapPage() {
         })
         .sort((a, b) => b.funding - a.funding)
         .slice(0, 3);
+
+      // Determine dominant sector (sector with highest funding)
+      data.dominantSector = data.topSectors.length > 0 ? data.topSectors[0].sector : '';
     });
 
     return aggregated;
@@ -181,11 +188,20 @@ export default function MapPage() {
     
     const intensity = Math.min(data.totalFunding / 50000000, 1);
     
+    // Determine color based on mode
+    let color: string;
+    if (colorMode === 'sector' && data.dominantSector) {
+      color = getSectorColor(data.dominantSector);
+    } else {
+      color = '#10b981'; // Default green for funding mode
+    }
+    
     return {
       size: adjustedSize,
-      color: `#10b981`,
+      color,
       opacity: 0.7 + intensity * 0.3,
-      glow: intensity > 0.5
+      glow: intensity > 0.5,
+      dominantSector: data.dominantSector
     };
   };
 
@@ -278,6 +294,22 @@ export default function MapPage() {
     }
   };
 
+  // Get unique sectors present in the data for legend
+  const uniqueSectors = useMemo(() => {
+    const sectors = new Set<string>();
+    Object.values(countryData).forEach(data => {
+      if (data.dominantSector) {
+        sectors.add(data.dominantSector);
+      }
+    });
+    return Array.from(sectors);
+  }, [countryData]);
+
+  // Get all available sectors from color schemes
+  const allSectors = useMemo(() => {
+    return getAllSectorColors();
+  }, []);
+
   if (isLoading) {
     return (
       <NavbarSidebarLayout>
@@ -293,10 +325,73 @@ export default function MapPage() {
       <div className="bg-black text-white p-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2">Global Climate Tech Map</h1>
-          <p className="text-gray-400">
-            Interactive visualization of climate tech funding activity worldwide • {fundingEvents.length} events • Use mouse wheel to zoom and drag to pan
-          </p>
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+            {/* Title and Description */}
+            <div className="flex-1 max-w-lg">
+              <h1 className="text-3xl font-bold text-white mb-2">Global Climate Tech Map</h1>
+              <p className="text-gray-400">
+                Interactive visualization of climate tech funding activity worldwide • {fundingEvents.length} events • Use mouse wheel to zoom and drag to pan
+              </p>
+            </div>
+            
+            {/* Color Mode Toggle - Now side by side with title */}
+            <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4 min-w-[600px]">
+              <h4 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                <Palette className="w-5 h-5 text-[var(--botanical-green)]" />
+                Color Mode
+              </h4>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setColorMode('funding')}
+                    className={`flex-1 text-sm px-2 py-2 rounded-lg transition-all duration-200 whitespace-nowrap ${
+                      colorMode === 'funding'
+                        ? 'bg-[var(--botanical-green)] text-white shadow-lg'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    Funding Activity
+                  </button>
+                  <button
+                    onClick={() => setColorMode('sector')}
+                    className={`flex-1 text-sm px-2 py-2 rounded-lg transition-all duration-200 whitespace-nowrap ${
+                      colorMode === 'sector'
+                        ? 'bg-[var(--botanical-green)] text-white shadow-lg'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    Sector Focus
+                  </button>
+                </div>
+                
+                {colorMode === 'funding' && (
+                  <div className="text-xs text-gray-400 bg-gray-800/50 p-2 rounded">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-3 h-3 rounded-full bg-[var(--botanical-green)]"></div>
+                      <span>Green intensity = Total funding amount</span>
+                    </div>
+                    <div className="text-gray-500">Size = Number of events</div>
+                  </div>
+                )}
+                
+                {colorMode === 'sector' && (
+                  <div className="text-xs text-gray-400 bg-gray-800/50 p-2 rounded">
+                    <div className="grid grid-cols-5 gap-x-3 gap-y-1 max-h-24 overflow-y-auto">
+                      {allSectors.map(({ sector, color }) => (
+                        <div key={sector} className="flex items-center gap-2">
+                          <div 
+                            className="w-2 h-2 rounded-full border border-white/30 flex-shrink-0"
+                            style={{ backgroundColor: color }}
+                          />
+                          <span className="text-gray-300 truncate">{sector}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
@@ -530,7 +625,7 @@ export default function MapPage() {
                       >
                         {m.glow && <circle r={m.size + 8} fill={m.color} opacity={0.2} />}
                         {hoveredCountry === country && (
-                          <circle r={m.size + 4} fill="none" stroke="#10b981" strokeWidth={2} strokeOpacity={0.8} />
+                          <circle r={m.size + 4} fill="none" stroke={m.color} strokeWidth={2} strokeOpacity={0.8} />
                         )}
                         <circle 
                           r={m.size} 
@@ -538,7 +633,10 @@ export default function MapPage() {
                           opacity={m.opacity} 
                           className="cursor-pointer transition-all duration-200 hover:opacity-100" 
                         />
-                        <title>{country}</title>
+                        <title>
+                          {country}
+                          {colorMode === 'sector' && m.dominantSector && ` - ${m.dominantSector}`}
+                        </title>
                       </Marker>
                     );
                   })}
@@ -571,6 +669,21 @@ export default function MapPage() {
                         {formatCurrency(countryData[hoveredCountry].avgFunding)}
                       </span>
                     </div>
+                    
+                    {colorMode === 'sector' && countryData[hoveredCountry].dominantSector && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300">Dominant Sector:</span>
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full border border-white/30"
+                            style={{ backgroundColor: getSectorColor(countryData[hoveredCountry].dominantSector) }}
+                          />
+                          <span className="text-[var(--botanical-green)] font-semibold">
+                            {countryData[hoveredCountry].dominantSector}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                     
                     {showDetailedEvents && countryData[hoveredCountry].recentEvents.length > 0 && (
                       <div className="mt-3 pt-3 border-t border-gray-600">
