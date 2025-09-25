@@ -36,11 +36,16 @@ const fetchFundingEvents = async (filters: any): Promise<FundingEvent[]> => {
     queryParams.append(key, String(value));
   }
 
+  console.log('Fetching events with params:', queryParams.toString());
   const response = await fetch(`/api/events/search?${queryParams.toString()}`);
   if (!response.ok) {
-    throw new Error('Network response was not ok');
+    const errorText = await response.text();
+    console.error('API Error:', errorText);
+    throw new Error(`Network response was not ok: ${errorText}`);
   }
-  return response.json();
+  const data = await response.json();
+  console.log('Received events:', data);
+  return data;
 };
 
 export default function FundingTrackerContent() {
